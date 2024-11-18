@@ -363,13 +363,23 @@ plt.show()
 
 #%%
 
+###############################
+#Using Riemann approximation
+###############################
+
+yein = 0.01
+yefin = 150
+yenum = 100
+
+yet = yein*(yefin/yein)**(np.arange(yenum+1)/yenum)
+
 def intf(yend, xs, u, v, point):
     f = lambda x: IT_cos(x, u, v, xs)
     g = lambda x: IT_sin(x, u, v, xs)
     a = 0.01
     b = yend
-    N = 1000
-    n = 1000 #use n*N+1 points to plot smoothly?
+    N = 10000
+    n = 10000 #use n*N+1 points to plot smoothly?
     
     x = np.linspace(a, b, N+1)
     cosp = f(x)
@@ -420,47 +430,57 @@ res3r = np.array(list(map(int3r, yet)))
 plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
-plt.plot(yet,res1l,'b')
+plt.loglog(yet,res1l,'b')
+# plt.xlim(20, 100)
 plt.title('Left Riemann sum of scen1')
 
 plt.subplot(1,3,2)
-plt.plot(yet,res1m,'b')
+plt.loglog(yet,res1m,'b')
+# plt.xlim(20, 100)
 plt.title('mid Riemann sum of scen1')
 
 plt.subplot(1,3,3)
-plt.plot(yet,res1r,'b')
+plt.loglog(yet,res1r,'b')
+# plt.xlim(20, 100)
 plt.title('right Riemann sum of scen1')
 
 plt.show()
 
+#%%
 plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
-plt.plot(yet,res2l,'b')
+plt.loglog(yet,res2l,'b')
+# plt.xlim(20, 100)
 plt.title('Left Riemann sum of scen2')
 
 plt.subplot(1,3,2)
-plt.plot(yet,res2m,'b')
+plt.loglog(yet,res2m,'b')
+# plt.xlim(20, 100)
 plt.title('mid Riemann sum of scen2')
 
 plt.subplot(1,3,3)
-plt.plot(yet,res2r,'b')
+plt.loglog(yet,res2r,'b')
+# plt.xlim(20, 100)
 plt.title('right Riemann sum of scen2')
 
 plt.show()
-
+#%%
 plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
-plt.plot(yet,res3l,'b')
+plt.loglog(yet,res3l,'b')
+# plt.xlim(20, 100)
 plt.title('Left Riemann sum of scen3')
 
 plt.subplot(1,3,2)
-plt.plot(yet,res3m,'b')
+plt.loglog(yet,res3m,'b')
+# plt.xlim(20, 100)
 plt.title('mid Riemann sum of scen3')
 
 plt.subplot(1,3,3)
-plt.plot(yet,res3r,'b')
+plt.loglog(yet,res3r,'b')
+# plt.xlim(20, 100)
 plt.title('right Riemann sum of scen3')
 
 plt.show()
