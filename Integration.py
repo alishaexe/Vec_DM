@@ -96,20 +96,20 @@ def TLBdy(y, xs):
     t2 = (1-8*xs**2*y**2)*cos((xs**2+y**2)/2)-2*(2*xs**2+y**2)*sin((xs**2+y**2)/2)
     return 1/(8*xs**(7/2)*y**(3/2))*(t1-t2)
 
-def derivTdy(y, xs):
-    if xs<1:
-        if y < 1:
-            return TEdy(y, xs)
-        else:
-            return TLAdy(y, xs)
-    else:
-        if y < xs:
-            return TEdy(y, xs)
-        else:
-            return TLBdy(y, xs)
+# def derivTdy(y, xs):
+#     if xs<1:
+#         if y < 1:
+#             return TEdy(y, xs)
+#         else:
+#             return TLAdy(y, xs)
+#     else:
+#         if y < xs:
+#             return TEdy(y, xs)
+#         else:
+#             return TLBdy(y, xs)
             
-        # if y >= xs:
-        #     return TLBdy(y, xs)
+#         # if y >= xs:
+#         #     return TLBdy(y, xs)
 
 def derivTdy(y, xs):
     condition_xs = xs < 1
@@ -205,8 +205,6 @@ res2 = np.array(list(map(int2, yet)))
 res3 = np.array(list(map(int3, yet)))
 
 #%%
-
-
 plt.loglog(yet, res1)
 plt.title("res1")
 # plt.xlim(0,200)
@@ -239,52 +237,52 @@ plt.show()
 ## pretty similar so going with stuff above
 ########################################
 def Tp(y, xs):
-    if xs<1:
-        if y<1:
-            return TE(y, xs)
-        else:
-            return TLA(y, xs)
-    else: #if xs >= 1
-        if y < xs:
-            return TE(y, xs)
-        else:
-            return TLB(y, xs)
+    condition_xs = xs < 1
+    condition_y1 = y < 1
+    condition_yxs = y < xs
+
+    # Use np.where for vectorized branching
+    return np.where(
+        condition_xs,
+        np.where(condition_y1, TE(y, xs), TLA(y, xs)),  # xs < 1: check y < 1
+        np.where(condition_yxs, TE(y, xs), TLB(y, xs))  # xs >= 1: check y < xs
+    )
 
 def Tpdy(y, xs):
-    if xs<1:
-        if y<1:
-            return TEdy(y, xs)
-        else:
-            return TLAdy(y, xs)
-    else: #if xs >= 1
-        if y < xs:
-            return TEdy(y, xs)
-        else:
-            return TLBdy(y, xs)    
+    condition_xs = xs < 1
+    condition_y1 = y < 1
+    condition_yxs = y < xs
+
+    # Use np.where for vectorized branching
+    return np.where(
+        condition_xs,
+        np.where(condition_y1, TEdy(y, xs), TLAdy(y, xs)),  # xs < 1: check y < 1
+        np.where(condition_yxs, TEdy(y, xs), TLBdy(y, xs))  # xs >= 1: check y < xs
+    )   
         
 def Tq(y, xs):
-    if xs<1:
-        if y<1:
-            return TE(y, xs)
-        else:
-            return TLA(y, xs)
-    else: #if xs >= 1
-        if y < xs:
-            return TE(y, xs)
-        else:
-            return TLB(y, xs)
+    condition_xs = xs < 1
+    condition_y1 = y < 1
+    condition_yxs = y < xs
+
+    # Use np.where for vectorized branching
+    return np.where(
+        condition_xs,
+        np.where(condition_y1, TE(y, xs), TLA(y, xs)),  # xs < 1: check y < 1
+        np.where(condition_yxs, TE(y, xs), TLB(y, xs))  # xs >= 1: check y < xs
+    )
         
 def Tqdy(y, xs):
-    if xs<1:
-        if y<1:
-            return TEdy(y, xs)
-        else:
-            return TLAdy(y, xs)
-    else: #if xs >= 1
-        if y < xs:
-            return TEdy(y, xs)
-        else:
-            return TLBdy(y, xs)    
+    condition_xs = xs < 1
+    condition_y1 = y < 1
+    condition_yxs = y < xs
+
+    # Use np.where for vectorized branching
+    return np.where(
+        condition_xs,
+        np.where(condition_y1, TEdy(y, xs), TLAdy(y, xs)),  # xs < 1: check y < 1
+        np.where(condition_yxs, TEdy(y, xs), TLBdy(y, xs))  # xs >= 1: check y < xs
+    )  
         
 def Tc(y, xs, u, v):
     return y*cos(y*xs)*(Tp(y, u*xs)*Tq(y, v*xs)-(y**2*Tpdy(y, u*xs)*Tqdy(y, v*xs))/((u**2*xs**2+y**2)*(v**2*xs**2+y**2)))
@@ -309,7 +307,160 @@ res3 = np.array(list(map(int3, yet)))
 #%%
 
 ## Change res3 to res2 or res1 etc to get the plot you want 
-plt.loglog(yet, res3)
+plt.loglog(yet, res2)
 # plt.xlim(0,50)
 plt.show()
 
+#%%
+
+def intf(yend, xs, u, v):
+    f = lambda x: IT_cos(x, u, v, xs)
+    g = lambda x: IT_sin(x, u, v, xs)
+    a = 0.01
+    b = yend
+    N = 1000
+    n = 1000 #use n*N+1 points to plot smoothly?
+    
+    x = np.linspace(a, b, N+1)
+    cosp = f(x)
+    sinp = g(x)
+    
+    X = np.linspace(a, b, n*N+1)
+    cosP = f(X)
+    sinP = g(X)
+    
+    dx = (b-a)/N
+    x_left = np.linspace(a, b-dx, N)
+    # x_mid = np.linspace(dx/2, b-dx/2, N)
+    # x_right = np.linspace(dx, b, N)
+    
+    mid_rem_fp = np.sum(f(x_left)*dx)
+    mid_rem_gp = np.sum(g(x_left)*dx)
+    return mid_rem_fp**2 + mid_rem_gp**2
+
+int1 = lambda g: intf(g, 0.6, 10, 9)
+int2 = lambda g: intf(g, 0.1, 10, 9)
+int3 = lambda g: intf(g, 1.3, 10, 9)
+
+res1 = np.array(list(map(int1, yet)))
+res2 = np.array(list(map(int2, yet)))
+res3 = np.array(list(map(int3, yet)))
+
+#%%
+plt.loglog(yet, res1)
+plt.title("res1 left")
+plt.show()
+
+
+plt.loglog(yet, res2)
+plt.title("res2 left")
+plt.show()
+
+
+plt.loglog(yet, res3)
+plt.title("res3 left")
+plt.show()
+
+#%%
+
+def intf(yend, xs, u, v, point):
+    f = lambda x: IT_cos(x, u, v, xs)
+    g = lambda x: IT_sin(x, u, v, xs)
+    a = 0.01
+    b = yend
+    N = 1000
+    n = 1000 #use n*N+1 points to plot smoothly?
+    
+    x = np.linspace(a, b, N+1)
+    cosp = f(x)
+    sinp = g(x)
+    
+    X = np.linspace(a, b, n*N+1)
+    cosP = f(X)
+    sinP = g(X)
+    
+    dx = (b-a)/N
+    if point == 1: #this gives the left points
+        x_point = np.linspace(a, b-dx, N)
+    if point == 2: #this gives the midpoints
+        x_point = np.linspace(dx/2, b-dx/2, N)
+    if point == 3: #this gives the right midpoints
+        x_point = np.linspace(dx, b, N)
+    
+    rem_fp = np.sum(f(x_point)*dx)
+    rem_gp = np.sum(g(x_point)*dx)
+    return rem_fp**2 + rem_gp**2
+
+int1l = lambda g: intf(g, 0.6, 10, 9, 1)
+int2l = lambda g: intf(g, 0.1, 10, 9, 1)
+int3l = lambda g: intf(g, 1.3, 10, 9, 1)
+
+res1l = np.array(list(map(int1l, yet)))
+res2l = np.array(list(map(int2l, yet)))
+res3l = np.array(list(map(int3l, yet)))
+
+int1m = lambda g: intf(g, 0.6, 10, 9, 2)
+int2m = lambda g: intf(g, 0.1, 10, 9, 2)
+int3m = lambda g: intf(g, 1.3, 10, 9, 2)
+
+res1m = np.array(list(map(int1m, yet)))
+res2m = np.array(list(map(int2m, yet)))
+res3m = np.array(list(map(int3m, yet)))
+
+int1r = lambda g: intf(g, 0.6, 10, 9, 3)
+int2r = lambda g: intf(g, 0.1, 10, 9, 3)
+int3r = lambda g: intf(g, 1.3, 10, 9, 3)
+
+res1r = np.array(list(map(int1r, yet)))
+res2r = np.array(list(map(int2r, yet)))
+res3r = np.array(list(map(int3r, yet)))
+
+#%%
+
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.plot(yet,res1l,'b')
+plt.title('Left Riemann sum of scen1')
+
+plt.subplot(1,3,2)
+plt.plot(yet,res1m,'b')
+plt.title('mid Riemann sum of scen1')
+
+plt.subplot(1,3,3)
+plt.plot(yet,res1r,'b')
+plt.title('right Riemann sum of scen1')
+
+plt.show()
+
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.plot(yet,res2l,'b')
+plt.title('Left Riemann sum of scen2')
+
+plt.subplot(1,3,2)
+plt.plot(yet,res2m,'b')
+plt.title('mid Riemann sum of scen2')
+
+plt.subplot(1,3,3)
+plt.plot(yet,res2r,'b')
+plt.title('right Riemann sum of scen2')
+
+plt.show()
+
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.plot(yet,res3l,'b')
+plt.title('Left Riemann sum of scen3')
+
+plt.subplot(1,3,2)
+plt.plot(yet,res3m,'b')
+plt.title('mid Riemann sum of scen3')
+
+plt.subplot(1,3,3)
+plt.plot(yet,res3r,'b')
+plt.title('right Riemann sum of scen3')
+
+plt.show()
