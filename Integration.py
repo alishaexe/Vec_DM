@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 from scipy.integrate import dblquad, quad
 import math
 from scipy.misc import derivative
@@ -33,7 +34,6 @@ def sin(theta):
 def cos(theta):
     return np.cos(theta)
 
-
 #These transfer functions come from the mathematica
 #notebook integrals_07nov and are  from "marcos file"
 
@@ -48,17 +48,17 @@ def TLA(y, xs):
 def TLB(y, xs):
     return (-cos((3*xs**2-y**2)/2)+cos((xs**2+y**2)/2)+4*xs**2 * sin((xs**2+y**2)/2))/(4*xs**(7/2)*np.sqrt(y))
 
-def T(y, xs):
-    if xs < 1:
-        if y < 1:
-            return TE(y, xs)
-        else:
-            return TLA(y, xs)
-    else:
-        if y < xs:
-            return TE(y, xs)
-        else:
-            return TLB(y, xs)
+# def T(y, xs):
+#     if xs < 1:
+#         if y < 1:
+#             return TE(y, xs)
+#         else:
+#             return TLA(y, xs)
+#     else:
+#         if y < xs:
+#             return TE(y, xs)
+#         else:
+#             return TLB(y, xs)
 
 def T(y, xs):
     condition_xs = xs < 1
@@ -135,10 +135,10 @@ def IT_cos(y, u, v, xs):
 def IT_sin(y, u, v, xs):
     return y*np.sin(xs*y)*f(y, u, v, xs)
 
-def IT(u, v, xs):#should be 0.01 -> np.inf
-    cres, cerr = qmc_quad(IT_cos, 0.01, np.inf, args=(u, v, xs))
-    sres, serr = qmc_quad(IT_sin, 0.01, np.inf, args=(u, v, xs))
-    return (np.real(cres))**2+(np.real(sres))**2
+# def IT(u, v, xs):#should be 0.01 -> np.inf
+#     cres, cerr = qmc_quad(IT_cos, 0.01, np.inf, args=(u, v, xs))
+#     sres, serr = qmc_quad(IT_sin, 0.01, np.inf, args=(u, v, xs))
+#     return (np.real(cres))**2+(np.real(sres))**2
 
 
 
@@ -148,23 +148,23 @@ def IT(u, v, xs):#should be 0.01 -> np.inf
 # final = OmegGW(0.7)
 
 #%%
-plt.loglog(yet, res1)
-plt.title("res1")
-# plt.xlim(0,200)
-# plt.ylim(1e-4,0.01)
-plt.show()
+# plt.loglog(yet, res1)
+# plt.title("res1")
+# # plt.xlim(0,200)
+# # plt.ylim(1e-4,0.01)
+# plt.show()
 
-plt.loglog(yet, res2)
-plt.title("res2")
-# plt.xlim(0,200)
-# plt.ylim(1e-4,0.01)
-plt.show()
+# plt.loglog(yet, res2)
+# plt.title("res2")
+# # plt.xlim(0,200)
+# # plt.ylim(1e-4,0.01)
+# plt.show()
 
-plt.loglog(yet, res3)
-plt.title("res3")
-# plt.xlim(0,200)
-# plt.ylim(1e-4,0.01)
-plt.show()
+# plt.loglog(yet, res3)
+# plt.title("res3")
+# # plt.xlim(0,200)
+# # plt.ylim(1e-4,0.01)
+# plt.show()
 
 #%%
 
@@ -239,13 +239,13 @@ def intc(yend, xs, u, v):
     return (np.real(cres))**2+(np.real(sres))**2
 
 
-int1 = lambda g: intc(g, 0.6, 10, 9)
-int2 = lambda g: intc(g, 0.1, 10, 9)
-int3 = lambda g: intc(g, 1.3, 10, 9)
+# int1 = lambda g: intc(g, 0.6, 10, 9)
+# int2 = lambda g: intc(g, 0.1, 10, 9)
+# int3 = lambda g: intc(g, 1.3, 10, 9)
 
-res1 = np.array(list(map(int1, yet)))
-res2 = np.array(list(map(int2, yet)))
-res3 = np.array(list(map(int3, yet)))
+# res1 = np.array(list(map(int1, yet)))
+# res2 = np.array(list(map(int2, yet)))
+# res3 = np.array(list(map(int3, yet)))
 
 #%%
 
@@ -272,7 +272,7 @@ def intf(yend, xs, u, v, point):
     g = lambda x: IT_sin(x, u, v, xs)
     a = 0.01
     b = yend
-    N = 5000
+    N = 7000
     # n = 3000 #use n*N+1 points to plot smoothly?
     
     # x = np.linspace(a, b, N+1)
@@ -303,21 +303,21 @@ res1l = np.array(list(map(int1l, yet)))
 res2l = np.array(list(map(int2l, yet)))
 res3l = np.array(list(map(int3l, yet)))
 
-int1m = lambda g: intf(g, 0.6, 10, 9, 2)
-int2m = lambda g: intf(g, 0.1, 10, 9, 2)
-int3m = lambda g: intf(g, 1.3, 10, 9, 2)
+# int1m = lambda g: intf(g, 0.6, 10, 9, 2)
+# int2m = lambda g: intf(g, 0.1, 10, 9, 2)
+# int3m = lambda g: intf(g, 1.3, 10, 9, 2)
 
-res1m = np.array(list(map(int1m, yet)))
-res2m = np.array(list(map(int2m, yet)))
-res3m = np.array(list(map(int3m, yet)))
+# res1m = np.array(list(map(int1m, yet)))
+# res2m = np.array(list(map(int2m, yet)))
+# res3m = np.array(list(map(int3m, yet)))
 
-int1r = lambda g: intf(g, 0.6, 10, 9, 3)
-int2r = lambda g: intf(g, 0.1, 10, 9, 3)
-int3r = lambda g: intf(g, 1.3, 10, 9, 3)
+# int1r = lambda g: intf(g, 0.6, 10, 9, 3)
+# int2r = lambda g: intf(g, 0.1, 10, 9, 3)
+# int3r = lambda g: intf(g, 1.3, 10, 9, 3)
 
-res1r = np.array(list(map(int1r, yet)))
-res2r = np.array(list(map(int2r, yet)))
-res3r = np.array(list(map(int3r, yet)))
+# res1r = np.array(list(map(int1r, yet)))
+# res2r = np.array(list(map(int2r, yet)))
+# res3r = np.array(list(map(int3r, yet)))
 
 #%%
 #Compare against the values obtained for test at (40)
@@ -385,7 +385,7 @@ plt.title('mid Riemann sum of scen3')
 plt.show()
 
 #%%
-
+start = time.time()
 
 xsin = 0.2
 xsfin = 300
@@ -412,8 +412,6 @@ sfactor = 1/snum * (sfin-sinn)
 def kk(i,j):
     res = (tt[i]*(2+tt[i])*(st[j]**2-1))**2/((1-st[j]+tt[i])*(1+st[j]+tt[i]))**2
     return res
-
-
 
 def OmegIntegrand(t, s, xs):
     u = (t+s+1)/2
@@ -443,6 +441,10 @@ def compute_sum(m):
 
 # Parallel computation
 tabres1 = Parallel(n_jobs=-1)(delayed(compute_sum)(m) for m in range(xsnum + 1))
+
+end = time.time()
+mins = (end-start)/60
+print(mins, "Minutes")
 #%%
 def fintab(m):
     res = 0.5*1/96/pi**4* tfactor*sfactor * xt[m]**4*tabres1[m]
@@ -453,11 +455,14 @@ hope = np.array(list(map(fintab, m)))
 plt.loglog(xt, hope)
 plt.xlabel(r"$x_\star$", fontsize = 16)
 plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
-plt.title("paarallel")
+plt.title("method 1")
 # plt.ylim(1e-5, 3e-4)
 plt.grid(True)
+plt.savefig('/Users/alisha/Documents/Vec_DM/OmegGW.png', bbox_inches='tight')
+plt.show()
 #%%
 #Alternative method?
+start = time.time()
 m = np.arange(xsnum+1)
 
 def jlvl(m,i,j):
@@ -480,10 +485,15 @@ def finlvl(m):
 
 pray = np.array(list(map(finlvl, m)))
 
+end = time.time()
+mins = (end-start)/60
+print(mins, "Minutes")
 
 #%%
 plt.loglog(xt, pray)
 plt.xlabel(r"$x_\star$", fontsize = 16)
 plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
-plt.ylim(1e-5, 3e-4)
+plt.title("method 2")
+# plt.ylim(1e-5, 3e-4)
 plt.grid(True)
+plt.show()
