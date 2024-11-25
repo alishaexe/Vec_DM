@@ -6,6 +6,7 @@ from scipy.misc import derivative
 from scipy.integrate import simpson, quadrature, romberg, fixed_quad
 from scipy import stats
 from scipy.integrate import qmc_quad
+from joblib import Parallel, delayed
 #%%
 pi = np.pi
 
@@ -135,74 +136,16 @@ def IT_sin(y, u, v, xs):
     return y*np.sin(xs*y)*f(y, u, v, xs)
 
 def IT(u, v, xs):#should be 0.01 -> np.inf
-    cres, cerr = qmc_quad(IT_cos, 0.01, np.inf, args=(xs, u, v))
-    sres, serr = qmc_quad(IT_sin, 0.01, np.inf, args=(xs, u, v))
+    cres, cerr = qmc_quad(IT_cos, 0.01, np.inf, args=(u, v, xs))
+    sres, serr = qmc_quad(IT_sin, 0.01, np.inf, args=(u, v, xs))
     return (np.real(cres))**2+(np.real(sres))**2
 
-def OmegIntegrand(t, s, xs):
-    u = (t+s+1)/2
-    v = (t-s+1)/2
-    t1 = ((t*(2+t)*(s**2-1))/((1-s+t)*(1+s+t)))**2
-    t2 = IT(u, v, xs)
-    return t1*t2
 
-def OmegGW(xs):
-    factor = xs**4/(96*pi**4) 
-    res, err = dblquad(OmegIntegrand, -1, 1, lambda t: 0, lambda t: np.inf, args=(xs,))
-    return factor*res
 
 
 ## As of yet have not ran OmegGW() since it takes so long to integrate, might make the
 ## integrals smaller to check it does work correctly
 # final = OmegGW(0.7)
-
-#%%
-
-xsin = 0.2
-xsfin = 300
-xsnum = 25
-
-xt = xsin * (xsfin/xsin) ** ((np.arange(xsnum+1)) / xsnum)
-
-tin = 0.01
-tfin = 300
-tnum=10
-
-tt=tin*(tfin/tin)**((np.arange(tnum+1))/tnum)
-
-tfactor = (tfin/tin)**(1/tnum)-1
-
-sinn = -1
-sfin = 1
-snum=10
-
-sfactor = 1/snum * (sfin-sinn)
-
-## Redefining the function so that we can do the tests of the y_end value
-
-def ITy(yend, u, v, xs):
-    ## qmc_quad doesn't take arguments like the normal quad so to contain
-    ## the other parameters and only integrate over y we use the lambda funcitons
-    cosf = lambda y: IT_cos(y, u, v, xs)
-    sinf = lambda y: IT_sin(y, u, v, xs)
-    ## QMC_quad uses Quasi-Monte Carlo quadrature to compute the integrals
-    cres, cerr = qmc_quad(cosf, 0.01, yend)
-    sres, serr = qmc_quad(sinf, 0.01, yend)
-    return (np.real(cres)**2+np.real(sres)**2)
-
-yein = 20
-yefin = 150
-yenum = 100
-
-yet = yein*(yefin/yein)**(np.arange(yenum+1)/yenum)
-
-int1 = lambda g: ITy(g, 0.6, 10, 9)
-int2 = lambda g: ITy(g, 0.1, 10, 9)
-int3 = lambda g: ITy(g, 1.3, 10, 9)
-
-res1 = np.array(list(map(int1, yet)))
-res2 = np.array(list(map(int2, yet)))
-res3 = np.array(list(map(int3, yet)))
 
 #%%
 plt.loglog(yet, res1)
@@ -311,55 +254,6 @@ plt.loglog(yet, res2)
 # plt.xlim(0,50)
 plt.show()
 
-#%%
-
-def intf(yend, xs, u, v):
-    f = lambda x: IT_cos(x, u, v, xs)
-    g = lambda x: IT_sin(x, u, v, xs)
-    a = 0.01
-    b = yend
-    N = 1000
-    n = 1000 #use n*N+1 points to plot smoothly?
-    
-    x = np.linspace(a, b, N+1)
-    cosp = f(x)
-    sinp = g(x)
-    
-    X = np.linspace(a, b, n*N+1)
-    cosP = f(X)
-    sinP = g(X)
-    
-    dx = (b-a)/N
-    x_left = np.linspace(a, b-dx, N)
-    # x_mid = np.linspace(dx/2, b-dx/2, N)
-    # x_right = np.linspace(dx, b, N)
-    
-    mid_rem_fp = np.sum(f(x_left)*dx)
-    mid_rem_gp = np.sum(g(x_left)*dx)
-    return mid_rem_fp**2 + mid_rem_gp**2
-
-int1 = lambda g: intf(g, 0.6, 10, 9)
-int2 = lambda g: intf(g, 0.1, 10, 9)
-int3 = lambda g: intf(g, 1.3, 10, 9)
-
-res1 = np.array(list(map(int1, yet)))
-res2 = np.array(list(map(int2, yet)))
-res3 = np.array(list(map(int3, yet)))
-
-#%%
-plt.loglog(yet, res1)
-plt.title("res1 left")
-plt.show()
-
-
-plt.loglog(yet, res2)
-plt.title("res2 left")
-plt.show()
-
-
-plt.loglog(yet, res3)
-plt.title("res3 left")
-plt.show()
 
 #%%
 
@@ -367,9 +261,9 @@ plt.show()
 #Using Riemann approximation
 ###############################
 
-yein = 0.01
+yein = 20
 yefin = 150
-yenum = 100
+yenum = 500
 
 yet = yein*(yefin/yein)**(np.arange(yenum+1)/yenum)
 
@@ -378,29 +272,29 @@ def intf(yend, xs, u, v, point):
     g = lambda x: IT_sin(x, u, v, xs)
     a = 0.01
     b = yend
-    N = 10000
-    n = 10000 #use n*N+1 points to plot smoothly?
+    N = 5000
+    # n = 3000 #use n*N+1 points to plot smoothly?
     
-    x = np.linspace(a, b, N+1)
-    cosp = f(x)
-    sinp = g(x)
+    # x = np.linspace(a, b, N+1)
+    # cosp = f(x)
+    # sinp = g(x)
     
-    X = np.linspace(a, b, n*N+1)
-    cosP = f(X)
-    sinP = g(X)
+    # X = np.linspace(a, b, n*N+1)
+    # cosP = f(X)
+    # sinP = g(X)
     
     dx = (b-a)/N
     if point == 1: #this gives the left points
         x_point = np.linspace(a, b-dx, N)
     if point == 2: #this gives the midpoints
         x_point = np.linspace(dx/2, b-dx/2, N)
-    if point == 3: #this gives the right midpoints
+    if point == 3: #this gives the right points
         x_point = np.linspace(dx, b, N)
     
     rem_fp = np.sum(f(x_point)*dx)
     rem_gp = np.sum(g(x_point)*dx)
-    return rem_fp**2 + rem_gp**2
-
+    return np.abs(rem_fp)**2 + np.abs(rem_gp)**2
+#%%
 int1l = lambda g: intf(g, 0.6, 10, 9, 1)
 int2l = lambda g: intf(g, 0.1, 10, 9, 1)
 int3l = lambda g: intf(g, 1.3, 10, 9, 1)
@@ -426,33 +320,57 @@ res2r = np.array(list(map(int2r, yet)))
 res3r = np.array(list(map(int3r, yet)))
 
 #%%
+#Compare against the values obtained for test at (40)
+I1 = 0.0029721
+I2 = 0.80305
+I3 = 0.00019053
 
-plt.figure(figsize=(15,5))
+print("Left scen 1 error:",np.abs(int1l(40)- I1))
+print("Midpoint scen 1 error:",np.abs(int1m(40) - I1))
+print("Right scen 1 error:",np.abs(int1r(40) - I1))
 
-plt.subplot(1,3,1)
-plt.loglog(yet,res1l,'b')
-# plt.xlim(20, 100)
-plt.title('Left Riemann sum of scen1')
+print("Left scen 2 error:",np.abs(int2l(40)- I2))
+print("Midpoint scen 2 error:",np.abs(int2m(40) - I2))
+print("Right scen 2 error:",np.abs(int2r(40) - I2))
 
-plt.subplot(1,3,2)
-plt.loglog(yet,res1m,'b')
-# plt.xlim(20, 100)
-plt.title('mid Riemann sum of scen1')
+print("Left scen 3 error:",np.abs(int3l(40)- I3))
+print("Midpoint scen 3 error:",np.abs(int3m(40) - I3))
+print("Right scen 3 error:",np.abs(int3r(40) - I3))
 
-plt.subplot(1,3,3)
-plt.loglog(yet,res1r,'b')
-# plt.xlim(20, 100)
-plt.title('right Riemann sum of scen1')
 
+
+
+#%%
+plt.loglog(yet, res1l)
+plt.title("scen 1")
+# plt.xscale("log")
+# plt.yscale("log")
 plt.show()
+
+plt.loglog(yet, res2l)
+plt.title("scen 2")
+plt.show()
+
+plt.loglog(yet, res3l)
+plt.title("scen 3")
+# plt.xlim(20, 120)
+# plt.ylim(1.3e-4, 3.5e-4)
+# plt.xscale("log")
+# plt.yscale("log")
+plt.show()
+
+# plt.loglog(yet, res1m)
+# plt.xlim(20, 120)
+# plt.show()
+
 
 #%%
 plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
-plt.loglog(yet,res2l,'b')
+plt.loglog(yet,res1m,'b')
 # plt.xlim(20, 100)
-plt.title('Left Riemann sum of scen2')
+plt.title('mid Riemann sum of scen1')
 
 plt.subplot(1,3,2)
 plt.loglog(yet,res2m,'b')
@@ -460,27 +378,112 @@ plt.loglog(yet,res2m,'b')
 plt.title('mid Riemann sum of scen2')
 
 plt.subplot(1,3,3)
-plt.loglog(yet,res2r,'b')
-# plt.xlim(20, 100)
-plt.title('right Riemann sum of scen2')
-
-plt.show()
-#%%
-plt.figure(figsize=(15,5))
-
-plt.subplot(1,3,1)
-plt.loglog(yet,res3l,'b')
-# plt.xlim(20, 100)
-plt.title('Left Riemann sum of scen3')
-
-plt.subplot(1,3,2)
 plt.loglog(yet,res3m,'b')
 # plt.xlim(20, 100)
 plt.title('mid Riemann sum of scen3')
 
-plt.subplot(1,3,3)
-plt.loglog(yet,res3r,'b')
-# plt.xlim(20, 100)
-plt.title('right Riemann sum of scen3')
-
 plt.show()
+
+#%%
+
+
+xsin = 0.2
+xsfin = 300
+xsnum = 250
+
+xt = xsin * (xsfin/xsin) ** ((np.arange(xsnum+1)) / xsnum)
+
+tin = 0.01
+tfin = 300
+tnum=100
+
+tt=tin*(tfin/tin)**((np.arange(tnum+1))/tnum)
+
+tfactor = (tfin/tin)**(1/tnum)-1
+
+sinn = -1
+sfin = 1
+snum=100
+
+st = sinn+ (np.arange(snum+1))/snum*(sfin-sinn)
+
+sfactor = 1/snum * (sfin-sinn)
+
+def kk(i,j):
+    res = (tt[i]*(2+tt[i])*(st[j]**2-1))**2/((1-st[j]+tt[i])*(1+st[j]+tt[i]))**2
+    return res
+
+
+
+def OmegIntegrand(t, s, xs):
+    u = (t+s+1)/2
+    v = (t-s+1)/2
+    res = intf(35,xs,u,v,1)
+    return res
+
+def OmegGW(m,i,j):
+    res = (kk(i,j)*OmegIntegrand(tt[i],st[j],xt[m]))*tt[i]
+    return res
+
+m = np.arange(xsnum+1)
+# i = np.arange(tnum+1)
+# j = np.arange(snum+1)
+
+# combs = np.array(np.meshgrid(j, i, indexing='ij')).T.reshape(-1, 2)
+# tab = np.zeros(xsnum)
+
+# combs[:,[0,1]]=combs[:,[1,0]] #Now it's m,i,j I think
+
+def compute_sum(m):
+    return np.sum(np.fromiter(
+        (OmegGW(m, i, j) * tt[i]
+        for i in range(tnum + 1)
+        for j in range(snum + 1))
+    , dtype=float))
+
+# Parallel computation
+tabres1 = Parallel(n_jobs=-1)(delayed(compute_sum)(m) for m in range(xsnum + 1))
+#%%
+def fintab(m):
+    res = 0.5*1/96/pi**4* tfactor*sfactor * xt[m]**4*tabres1[m]
+    return res
+
+hope = np.array(list(map(fintab, m)))
+#%%
+plt.loglog(xt, hope)
+plt.xlabel(r"$x_\star$", fontsize = 16)
+plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
+plt.title("paarallel")
+# plt.ylim(1e-5, 3e-4)
+plt.grid(True)
+#%%
+#Alternative method?
+m = np.arange(xsnum+1)
+
+def jlvl(m,i,j):
+    return OmegGW(m,i,j)*tt[i]
+
+def ilvl(m,i):
+    jinc = np.arange(snum+1)
+    res = lambda j: jlvl(m,i,j)
+    return np.sum(np.array(list(map(res, jinc))))
+
+def mlvl(m):
+    iinc = np.arange(tnum+1)
+    res = lambda i: ilvl(m,i)
+    return np.sum(np.array(list(map(res, iinc))))
+
+def finlvl(m):
+    fin = mlvl(m)
+    res = 0.5*1/96/pi**4* tfactor*sfactor * xt[m]**4*fin
+    return res
+
+pray = np.array(list(map(finlvl, m)))
+
+
+#%%
+plt.loglog(xt, pray)
+plt.xlabel(r"$x_\star$", fontsize = 16)
+plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
+plt.ylim(1e-5, 3e-4)
+plt.grid(True)
