@@ -229,14 +229,15 @@ end = time.time()
 mins = (end-start)/60
 print(mins, "Minutes")
 
+#Last time with 7000 in integrations and 200 x vals it took 8 mins
 #%%
 plt.loglog(xt, hope)
-# plt.xlabel(r"$x_\star$", fontsize = 16)
-# plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
+plt.xlabel(r"$x_\star$", fontsize = 16)
+plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
 # plt.title("method 1")
 # # plt.ylim(1e-5, 3e-4)
 plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/JaxOmegGW.png', bbox_inches='tight')
+plt.savefig('/Users/alisha/Documents/Vec_DM/JaxOmegGW.png', bbox_inches='tight')
 plt.show()
 
 #%%
