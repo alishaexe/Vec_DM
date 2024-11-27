@@ -135,10 +135,10 @@ def IT_cos(y, u, v, xs):
 def IT_sin(y, u, v, xs):
     return y*np.sin(xs*y)*f(y, u, v, xs)
 
-# def IT(u, v, xs):#should be 0.01 -> np.inf
-#     cres, cerr = qmc_quad(IT_cos, 0.01, np.inf, args=(u, v, xs))
-#     sres, serr = qmc_quad(IT_sin, 0.01, np.inf, args=(u, v, xs))
-#     return (np.real(cres))**2+(np.real(sres))**2
+def IT(u, v, xs):#should be 0.01 -> np.inf
+    cres, cerr = quad(IT_cos, 0.01, np.inf, args=(u, v, xs))
+    sres, serr = quad(IT_sin, 0.01, np.inf, args=(u, v, xs))
+    return (np.real(cres))**2+(np.real(sres))**2
 
 
 
@@ -267,12 +267,12 @@ yenum = 500
 
 yet = yein*(yefin/yein)**(np.arange(yenum+1)/yenum)
 
-def intf(yend, xs, u, v, point):
+def intf(yend, u, v, xs, point):
     f = lambda x: IT_cos(x, u, v, xs)
     g = lambda x: IT_sin(x, u, v, xs)
     a = 0.01
     b = yend
-    N = 7000
+    N = 3000
     # n = 3000 #use n*N+1 points to plot smoothly?
     
     # x = np.linspace(a, b, N+1)
@@ -295,9 +295,9 @@ def intf(yend, xs, u, v, point):
     rem_gp = np.sum(g(x_point)*dx)
     return np.abs(rem_fp)**2 + np.abs(rem_gp)**2
 #%%
-int1l = lambda g: intf(g, 0.6, 10, 9, 1)
-int2l = lambda g: intf(g, 0.1, 10, 9, 1)
-int3l = lambda g: intf(g, 1.3, 10, 9, 1)
+int1l = lambda g: intf(g, 10, 9, 0.6, 1)
+int2l = lambda g: intf(g, 10, 9, 0.1, 1)
+int3l = lambda g: intf(g, 10, 9, 1.3, 1)
 
 res1l = np.array(list(map(int1l, yet)))
 res2l = np.array(list(map(int2l, yet)))
