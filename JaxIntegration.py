@@ -153,13 +153,14 @@ plt.show()
 start = time.time()
 
 xsin = 0.2
-xsfin = 300
+xsfin = 1000
 xsnum = 200
 
 xt = xsin * (xsfin/xsin) ** ((jnp.arange(xsnum+1)) / xsnum)
 
+
 tin = 0.01
-tfin = 300
+tfin = 100
 tnum=15
 
 tt=tin*(tfin/tin)**((jnp.arange(tnum+1))/tnum)
@@ -186,12 +187,6 @@ def OmegIntegrand(t, s, xs):
     res = IT(50, u, v, xs)
     # res2 = kk(i,j)*res*tt[i]
     return res
-# def OmegIntegrand(i, j, m):
-#     u = (tt[i]+st[j]+1)/2
-#     v = (tt[i]-st[j]+1)/2
-#     res = IT(50, u, v, xt[m])
-#     # res2 = kk(i,j)*res*tt[i]
-#     return res
 
 @jit
 def OmegGW(m,i,j):
@@ -230,38 +225,27 @@ mins = (end-start)/60
 print(mins, "Minutes")
 
 #Last time with 7000 in integrations and 200 x vals it took 8 mins
+
+
 #%%
+
 plt.loglog(xt, hope)
+# plt.axline((x1,y1),(x2,y2), color = 'r')
 plt.xlabel(r"$x_\star$", fontsize = 16)
-plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
+# plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
+plt.ylabel(r"$\Omega_{GW}$")
+plt.axhline(y=5e-6, color='r', linestyle='--', label="y = 0.5")
 # plt.title("method 1")
 # # plt.ylim(1e-5, 3e-4)
 plt.grid(True)
-plt.savefig('/Users/alisha/Documents/Vec_DM/JaxOmegGW.png', bbox_inches='tight')
+# plt.savefig('/Users/alisha/Documents/Vec_DM/JaxOmegGW.png', bbox_inches='tight')
 plt.show()
 
+
 #%%
-#Test the kk function
-iind = jnp.arange(tnum + 1)
-jind = jnp.arange(snum + 1)
-grid = jnp.array(jnp.meshgrid(iind, jind)).T.reshape(-1,2)
-igrid = grid[:,0]
-jgrid = grid[:,1]
-testkk = vmap(kk)(igrid,jgrid)
 
+def func(x):
+    return 1e-5*x**2.5
 
-# test = vmap(compute_sum)(m)
-#%%
-#Test the omeg integrand funciton
-iind = jnp.arange(tnum + 1)
-jind = jnp.arange(snum + 1)
-grid = jnp.array(jnp.meshgrid(iind, jind, m)).T.reshape(-1,3)
-
-igrid = grid[:,0]
-jgrid = grid[:,1]
-mgrid = grid[:,2]
-testOI = vmap(OmegIntegrand)(igrid, jgrid, mgrid)
-# u = (tt+st+1)/2
-# v = (tt-st+1)/2
-# y = jnp.ones(len(u))*50
-# testIT = vmap(IT)(y, u, v, xt)
+x1, x2 = 0.15, 0.7
+y1, y2 = func(x1), func(x2)
