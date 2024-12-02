@@ -132,7 +132,7 @@ def Ttot(y, xs):
     t3 = y**4/((1+xs)**4+y**4)*(1/np.sqrt(y)*(1/(1+xs**4)*c2a + xs**4/(1+xs**4)*c2b)*np.sin(y**2/2))
     return(t1+t2+t3)
 
-y = np.linspace(0.001,10,1000)
+y = np.linspace(0.001,10,500)
 
 Tfin = Ttot(y, 0.01)
 plt.plot(y, Tfin, label = "approximation")
@@ -141,6 +141,67 @@ plt.ylabel(r'$T$', fontsize=size)
 plt.title('')
 plt.grid(True) 
 # plt.legend(fontsize=13)
+plt.show()
+#%%
+def sin(theta):
+    return np.sin(theta)
+def cos(theta):
+    return np.cos(theta)
+
+#These transfer functions come from the mathematica
+#notebook integrals_07nov and are  from "marcos file"
+
+def TE(y, xs):
+    return sin(xs*y)/(xs*y)
+
+#transfer function late A
+def TLA(y, xs):
+    return 1/(2*xs*np.sqrt(y))*(2*sin(xs)*cos((1-y**2)/2)+(-2*xs*cos(xs)+sin(xs))*sin((1-y**2)/2))
+
+#transfer function late B
+def TLB(y, xs):
+    return (-cos((3*xs**2-y**2)/2)+cos((xs**2+y**2)/2)+4*xs**2 * sin((xs**2+y**2)/2))/(4*xs**(7/2)*np.sqrt(y))
+
+def T(y, xs):
+    condition_xs = xs < 1
+    condition_y1 = y < 1
+    condition_yxs = y < xs
+
+    # Use np.where for vectorized branching
+    return np.where(
+        condition_xs,
+        np.where(condition_y1, TE(y, xs), TLA(y, xs)),  # xs < 1: check y < 1
+        np.where(condition_yxs, TE(y, xs), TLB(y, xs))  # xs >= 1: check y < xs
+    )
+
+
+#%%
+#Comparing the 2 transfer functions
+def xstar(s, e, num):
+    xs = s * (e/s) ** ((np.arange(num)) / num)
+    return xs
+
+xmode = xstar(0.001, 100, 1000)
+
+ymo = np.linspace(0.001,100,1000)
+def tcomp(y, xs):
+    res =  y**2*np.abs(T(y, xs))**2
+    return res
+
+test = tcomp(xmode, ymo)
+plt.loglog(xmode, test)
+plt.grid(True)
+plt.show
+#%%
+plt.loglog(xmode, test, label = "Marco")
+plt.loglog(xs, ps, label="Numerical", color='indigo')
+plt.xlabel(r'$x_\star$', fontsize=size)
+plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
+plt.title('')
+plt.grid(True) 
+# plt.xlim(0.01, 100)
+# plt.ylim(1e-6, 10)
+plt.legend(fontsize=13)
 plt.show()
 
 #%%
