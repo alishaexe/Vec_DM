@@ -12,8 +12,7 @@ xsFIN = 500
 xsIN = 0.001
 xsnum = 500
 xs = xsIN * (xsFIN/xsIN) ** ((np.arange(xsnum)) / xsnum)
-ivals = np.arange(1, xsnum+1)
-xsval = xsIN * (xsFIN/xsIN) ** ((ivals-1) / xsnum)
+
 # diff equation
 def diffeqs(y, z, xs_i):
     z1, z2 = z #letting z = vp(y)

@@ -29,12 +29,27 @@ def TE(y, xs):
 #transfer function late A
 @jit
 def TLA(y, xs):
-    return 1/(2*xs*jnp.sqrt(y))*(2*sin(xs)*cos((1-y**2)/2)+(-2*xs*cos(xs)+sin(xs))*sin((1-y**2)/2))
+    sh = sin(1/2)
+    ch = cos(1/2)
+    
+    c1a = -sh*cos(xs)+(ch+0.5*sh)*(sin(xs)/xs)
+    c2a = ch*cos(xs)+(sh-0.5*ch)*(sin(xs)/xs)
+    
+    res = 1/jnp.sqrt(y)*(c1a*cos((y**2)/2)+c2a*sin((y**2)/2))
+    
+    # 1/(2*xs*np.sqrt(y))*(2*sin(xs)*cos((1-y**2)/2)+(-2*xs*cos(xs)+sin(xs))*sin((1-y**2)/2))
+    return res
 
 #transfer function late B
 @jit
 def TLB(y, xs):
-    return (-cos((3*xs**2-y**2)/2)+cos((xs**2+y**2)/2)+4*xs**2 * sin((xs**2+y**2)/2))/(4*xs**(7/2)*jnp.sqrt(y))
+    c1b = sin((xs**2)/2)/(xs**1.5)*(1+sin(xs**2)/(2*xs**2))
+    c2b = cos((xs**2)/2)/(xs**1.5)*(1-sin(xs**2)/(2*xs**2))
+    
+    res = 1/jnp.sqrt(y)*(c1b*cos(y**2/2)+c2b*sin(y**2/2))
+    
+    # (-cos((3*xs**2-y**2)/2)+cos((xs**2+y**2)/2)+4*xs**2 * sin((xs**2+y**2)/2))/(4*xs**(7/2)*np.sqrt(y))
+    return res
 
 @jit
 def T(y, xs):
