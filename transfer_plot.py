@@ -133,7 +133,7 @@ def Ttot(y, xs):
 
 y = np.linspace(0.001,10,500)
 
-Tfin = Ttot(y, 0.01)
+Tfin = Ttot(y, 0.1)
 plt.plot(y, Tfin, label = "approximation")
 plt.xlabel(r'$y$', fontsize=size)
 plt.ylabel(r'$T$', fontsize=size)

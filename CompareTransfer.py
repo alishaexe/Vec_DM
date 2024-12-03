@@ -3,6 +3,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import time
 from scipy.signal import find_peaks
+
 from scipy.interpolate import interp1d
 
 #%%
@@ -72,21 +73,55 @@ def T(y, xs):
         np.where(condition_yxs, TE(y, xs), TLB(y, xs))  # xs >= 1: check y < xs
     )
 
+# def T(y, xs):
+#     if xs <= 1:
+#         if y <= 1:
+#             return TE(y, xs)
+#         else:
+#             return TLA(y, xs)
+#     else:
+#         if y <= xs:
+#             return TE(y, xs)
+#         else:
+#             return TLB(y, xs)
 
 ymo = np.linspace(0.001,55,500)
 def tcomp(y, xs):
     res =  xs**2*np.abs(T(y, xs))**2
+    # res =  np.abs(T(y, xs))
     return res
 
-test = tcomp(ymo, xs)
-plt.loglog(xs, test)
+def Ttot(y, xs):
+    # xs = xsIN * (xsFIN/xsIN) ** ((i-1) / xsnum)
+    ch=np.cos(1/2)
+    sh= np.sin(1/2)
+    
+    c1a= -sh*np.cos(xs)+(ch+1/2*sh)*np.sin(xs)/xs
+    c1b= np.sin(xs**2/2)/(xs**(3/2))*(1+np.sin(xs**2)/(2*xs**2))
+    c2a= ch*np.cos(xs)+(sh-1/2*ch)*np.sin(xs)/xs
+    c2b= np.cos(xs**2/2)/(xs**(3/2))*(1-np.sin(xs**2)/(2*xs**2))
+    
+    t1 = (1+xs)**4/((1+xs)**4+y**4)*np.sin(xs*y)/(xs*y)
+    t2 = y**4/((1+xs)**4+y**4)*(1/np.sqrt(y)*(1/(1+xs**4)*c1a + xs**4/(1+xs**4)*c1b)*np.cos(y**2/2))
+    t3 = y**4/((1+xs)**4+y**4)*(1/np.sqrt(y)*(1/(1+xs**4)*c2a + xs**4/(1+xs**4)*c2b)*np.sin(y**2/2))
+    return xs**2*((t1+t2+t3))**2
+
+
+# test1 = np.array(list(map(lambda args: tcomp(*args), )))
+test1 = tcomp(np.exp(4), xs)
+test = Ttot(np.exp(4), xs)
+plt.loglog(xs, test1)
 plt.grid(True)
 plt.show
 #%%
-plt.loglog(xs, test, label = "Marco")
-plt.loglog(xs, ps, label="Numerical", color='indigo')
+#Just T alone
+new_T = np.sqrt(ps/xs**2)
+#%%
+plt.loglog(xs, test, label = "Gianmassimo")
+# plt.loglog(xs, ps, label="Numerical", color='indigo')
+plt.loglog(xs, test1, label="Marco")
 plt.xlabel(r'$x_\star$', fontsize=size)
-plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
+# plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
 plt.grid(True) 
 # plt.xlim(0.01, 100)
