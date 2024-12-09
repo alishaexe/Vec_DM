@@ -350,7 +350,7 @@ data = [
 xdat, ydat = np.array(data).T
 #%%
 
-fgw1 = 7.5e-6
+fgw1 = 1e-11
 def case1(y):
     res = y*1e-6
     return res
@@ -372,96 +372,6 @@ fdat = np.array(list(map(freq1, xdat)))
 # plt.loglog(fdat, omegdat)
 # plt.show
 
-#%%
-yr = 365*24*60*60 #in seconds
-H0 = 100*0.67*10**(3)/(3.086*10**(22)) #1/seconds
-# H0 = 3.24e-18 #Debikas value
-#setting h = 0.67
-pi = np.pi
-c = 3e8
-fetstar = 10**(-2)
-fi = 0.4*10**(-3)
-
-#For the LISA mission they have designed the
-#arms to be length L = 2.5*10^(6)
-T = 3*yr
-snr5 = 5
-#L = 2.5e9
-L = 25/3
-
-c = 3e8
-fetstar = 10**(-2)
-fi = 0.4*10**(-3)
-
-fLisa = 1/(2*pi*L)
-ffmin = 10**(-5)
-ffmax = 445
-elmin = np.log10(ffmin)
-elmax = np.log10(ffmax)
-###############
-#Change this value for how many 'steps' you want in the range of values
-
-itera = 100
-nitera = 10
-##########
-
-elminL = (np.log10(ffmin))
-elmaxL = (np.log10(10**(-0.95)))
-elminet = np.log10(1.6)
-elmaxet = (np.log10(ffmax))
-ntmin = -9/2
-ntmax = 9/2
-step = (ntmax-ntmin)/itera
-
-
-P = 12
-A = 3
-
-
-def P_acc(f):
-    res = A**2 *(1e-15)**2 * (1+(0.4e-3 / f)**2)*(1+(f/8e-3)**4)*(2*pi*f)**(-4)*(2*pi*f/c)**2
-    return res
-
-def P_ims(f):#* (1e-12)**2 after P
-    res = P**2 * (1e-12)**2 *(1+(2e-3/f)**4)*(2*pi*f/c)**2
-    return res
-
-def N_aa(f):
-    con = 2*pi*f*L
-    res = 8 * (np.sin(con))**2 * (4*(1+np.cos(con)+(np.cos(con))**2)*P_acc(f)+(2+np.cos(con))*P_ims(f))
-    return res
-
-def R(f):
-    res = 16*(np.sin(2*pi*f*L))**2  * (2*pi*f*L)**2 * 9/20 * 1/(1+0.7*(2*pi*f*L)**2)
-    return res
-
-def S_n(f):
-    res = N_aa(f)/R(f)
-    return res
-
-def Ohms(f):
-    const = 4*pi**2/(3*H0**2)
-    res = const *f**3*S_n(f)
-    return res
-
-freqvals = np.logspace(elminL, elmaxL, 200)   
-sigvals = np.array(list(map(Ohms, freqvals)))
-
-
-#%%
-fbplo = np.load("ftablisa.npy")
-
-plt.figure(figsize=(6, 7))
-plt.loglog(freqvals, sigvals, label = "Nominal Curve", color = "indigo", linewidth=1.5)
-plt.loglog(np.exp(fbplo[:,0]), np.exp(fbplo[:,1]), label = "BPLS curve", color = "lime", linewidth=1.5)
-# plt.loglog(fme, omegme, label="PythonCurve")
-plt.loglog(fdat, omegdat, label = "Case 1", color = "black")
-plt.ylabel(r"$\Omega_{GW}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(fontsize = 12)
-plt.grid(True)
-plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_C1.png', bbox_inches='tight')
-plt.show()
 
 #%%
 #Case 2
@@ -485,7 +395,6 @@ fdat2 = np.array(list(map(freq2, xdat)))
 # fme = np.array(list(map(freq, xt)))
 
 plt.figure(figsize=(6, 7))
-plt.loglog(freqvals, sigvals, label = "Nominal Curve", color = "indigo", linewidth=1.5)
 plt.loglog(np.exp(flogom[:,0]), np.exp(flogom[:,1]), label = "PLS curve", color = "orangered", linewidth=1.5)
 # plt.loglog(fme, omegme, label="PythonCurve")
 plt.loglog(fdat2, omegdat2, label = "Case 2", color = "black")

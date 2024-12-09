@@ -25,8 +25,10 @@ Omega_GW = PTA[:, 3] #calculated using H0=67.4 km/s/Mpc = 67.4*1e3/1/3e22 s^-1 t
 
 @jit
 def pls(a):
-    res = (freqs/fpta)**a/(h_c*H0)
+    res = ((freqs/fpta)**a/(Omega_GW))**2
     return res
+
+
 
 @jit
 def integrate(a):
@@ -65,7 +67,7 @@ iit = jnp.arange(len(frequency))
 PLS = maxtab()
 
 plt.loglog(frequency, PLS)
-plt.loglog(freqs, h_c)
+plt.loglog(freqs, Omega_GW)
 plt.grid(True)
 # plt.ylim(1e-10,1e-1)
 plt.show()
@@ -108,16 +110,18 @@ plt.show()
 anaomeg1 = np.array(list(map(case1, analytical)))
 anafreq1 = np.array(list(map(freq1, xt)))
 
-
+#%%
 plt.figure(figsize=(6, 7))
-plt.loglog(frequency, PLS, label = "PLS")
-plt.loglog(freqs, Omega_GW, label = r"$\Omega_{GW}$")
+# plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
+plt.loglog(freqs, Omega_GW, label = r"Nominal Nanograv", color = "indigo")
+# plt.loglog(anafreq1, case1(te), label ="numerical")
+plt.loglog(freqs, Omega_GW*1e-2, label = r"Nominal SKA", color = "blue")
 plt.loglog(anafreq1, anaomeg1, label = "Case 1 (analytical)", color = "black")
 plt.ylabel(r"$\Omega_{GW}$")
 plt.xlabel(r"$f (Hz)$")
 plt.legend(loc = 9, fontsize = 12)
 plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_analytical1.png', bbox_inches='tight')
+plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano.png', bbox_inches='tight')
 plt.show()
 #%%
 
@@ -125,9 +129,85 @@ plt.show()
 #S_h = 3H0**2/2pi**2*Omega_gw / f**3
 #h_c = sqrt(f*s_h)=sqrt(3H0**2/2pi**2*Omega/f**2)
 
-def strain(f):
-    res = np.sqrt(3*H0**2/(2*pi**2)*Omega_GW/f**2)
+# def strain(f):
+#     res = np.sqrt(3*H0**2/(2*pi**2)*Omega_GW/f**2)
+#     return res
+
+# hc = vmap(strain)(xt)
+# plt.loglog(frequency, hc)
+
+nomhc = np.sqrt(3*H0**2/2*pi**2*Omega_GW / freqs**2)
+plshc = np.sqrt(3*H0**2/2*pi**2*PLS / frequency**2)
+anahc = np.sqrt(3*H0**2/2*pi**2*anaomeg1/ anafreq1**2)
+
+
+plt.figure(figsize=(6, 7))
+# plt.loglog(frequency, plshc, label = "PLS")
+plt.loglog(freqs, nomhc, label = r"$nom$")
+# plt.loglog(freqs, h_c, label ="data")
+plt.loglog(anafreq1, anahc, label = "Case 1 (analytical)", color = "black")
+plt.ylabel(r"$h_{c}$")
+plt.xlabel(r"$f (Hz)$")
+plt.legend(loc = 9, fontsize = 12)
+plt.grid(True)
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_analytical1.png', bbox_inches='tight')
+plt.show()
+
+#%%
+
+@jit
+def bpls(n1, n2):
+    s = 10
+    res = ((freqs/fpta)**n1 * (1/2+1/2*(freqs/fpta)**s)**(-(n1-n2)/s))
     return res
 
-hc = vmap(strain)(xt)
-plt.loglog(frequency, hc)
+@jit
+def integrateb(a, b):
+    I1 = jnp.trapezoid((bpls(a, b)/Omega_GW)**2, freqs)
+    res = snr/(jnp.sqrt(2*T*I1))
+    return res
+
+alpha = jnp.arange(-8, 9, 1) #this list from -8 to 8
+beta = jnp.arange(-8, 9, 1)
+
+powers = jnp.array(jnp.meshgrid(alpha, beta)).T.reshape(-1,2)
+n1 = powers[:,0]
+n2 = powers[:,1]
+
+Btab = vmap(integrateb)(n1, n2)
+# testtab = integrateb(n1, n2)
+
+fmin = 2e-10
+fmax = 2e-7
+bins = 5000
+fstep = (fmax-fmin)/bins
+
+frequency = jnp.arange(fmin, fmax,fstep)
+
+
+@jit
+def ftest(f):
+    s=10
+    # return Btab*bpls(n1,n2)
+    return Btab*((f/fpta)**n1 * (1/2+1/2*(f/fpta)**s)**(-(n1-n2)/s))
+
+
+fvals = vmap(ftest)(frequency)
+
+
+@jit
+def maxtab():
+    maxed = (jnp.max(fvals, axis = 1))
+    return maxed
+
+# iit = jnp.arange(len(frequency))
+
+BPLS = maxtab()
+
+plt.loglog(frequency, BPLS, label = "BPLS", color = "lime")
+plt.loglog(freqs, Omega_GW, color = "indigo", label = "Nominal")
+plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
+plt.legend()
+plt.grid(True)
+# plt.ylim(1e-10,1e-1)
+plt.show()

@@ -118,7 +118,7 @@ plt.show
 new_T = np.sqrt(ps/xs**2)
 #%%
 plt.loglog(xs, test, label = "Gianmassimo")
-# plt.loglog(xs, ps, label="Numerical", color='indigo')
+plt.loglog(xs, ps, label="Numerical", color='indigo')
 plt.loglog(xs, test1, label="Marco")
 plt.xlabel(r'$x_\star$', fontsize=size)
 # plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
