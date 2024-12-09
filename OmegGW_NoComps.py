@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 #%%
 
 #Loading all the datafiles
-otab = np.load("jaxOmeg.npy")
+otab = np.load("datafiles/jaxOmeg.npy")
 xt, te = otab[:,0], otab[:,1]
 
 data = [
@@ -46,7 +46,7 @@ data = [
 # Split data into x and y vectors
 xdat, ydat = np.array(data).T
 
-PTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/sensitivity_curves_NG15yr_fullPTA.txt",delimiter=',', skiprows=1)
+PTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/datafiles/sensitivity_curves_NG15yr_fullPTA.txt",delimiter=',', skiprows=1)
 freqs = PTA[:, 0]
 h_c = PTA[:, 1] # characteristic strain
 S_eff = PTA[:, 2] #strain power spectral density

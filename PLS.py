@@ -7,7 +7,7 @@ from jax import jit, grad, vmap, device_put, jacobian
 from jax.scipy.integrate import trapezoid
 
 #%%
-PTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/sensitivity_curves_NG15yr_fullPTA.txt",delimiter=',', skiprows=1)
+PTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/datafiles/sensitivity_curves_NG15yr_fullPTA.txt",delimiter=',', skiprows=1)
 
 pi = jnp.pi
 H0 = 100*0.67*10**(3)/(3.086*10**(22))
@@ -73,7 +73,7 @@ plt.grid(True)
 plt.show()
 #%%
 
-otab = np.load("/Users/alisha/Documents/Vec_DM/jaxOmeg.npy")
+otab = np.load("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg.npy")
 xt, te = otab[:,0], otab[:,1]
 fgw1 = 1e-11
 
@@ -103,9 +103,6 @@ def OmegAnalytical(f):
 
 analytical = np.array(list(map(OmegAnalytical, xt)))
 
-plt.loglog(xt, analytical)
-plt.show()
-
 #For case 1 using the analytical fit we get
 anaomeg1 = np.array(list(map(case1, analytical)))
 anafreq1 = np.array(list(map(freq1, xt)))
@@ -124,7 +121,7 @@ plt.grid(True)
 # plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano1.png', bbox_inches='tight')
 plt.show()
 #%%
-otab = np.load("/Users/alisha/Documents/Vec_DM/jaxOmeg.npy")
+otab = np.load("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg.npy")
 xt, te = otab[:,0], otab[:,1]
 fgw2 = 7e-11
 

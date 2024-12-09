@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 #%%
 #This loads the numerical array for transfer function from transfer_plot.py
 size = 16
-ps = np.load("/Users/alisha/Documents/Vec_DM/PS.npy")
+ps = np.load("/Users/alisha/Documents/Vec_DM/datafiles/PS.npy")
 
 #Now define x_star
 
