@@ -244,7 +244,7 @@ print(mins, "Minutes")
 te = np.array(hope)
 
 jaxo = np.vstack((xt, te)).T
-np.save("/Users/alisha/Documents/Vec_DM/jaxOmeg.npy",jaxo)
+np.save("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg.npy",jaxo)
 #%%
 
 plt.loglog(xt, hope)
@@ -288,7 +288,7 @@ plt.show()
 #%%
 from scipy.interpolate import UnivariateSpline
 #%%
-otab = np.load("/Users/alisha/Documents/Vec_DM/jaxOmeg.npy")
+otab = np.load("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg.npy")
 xt, te = otab[:,0], otab[:,1]
 #%%
 ym = np.log10(te)
@@ -348,62 +348,6 @@ data = [
 
 # Split data into x and y vectors
 xdat, ydat = np.array(data).T
-#%%
-
-fgw1 = 1e-11
-def case1(y):
-    res = y*1e-6
-    return res
-
-def freq1(f):
-    res = f*fgw1
-    return res
-
-omegdat = np.array(list(map(case1, ydat)))
-fdat = np.array(list(map(freq1, xdat)))
-
-# plt.loglog(fdat, omegdat)
-# plt.show()
-
-# omegme = np.array(list(map(fOmeg, ysmoo)))
-# fme = np.array(list(map(freq, xt)))
-
-# plt.loglog(fme, omegme)
-# plt.loglog(fdat, omegdat)
-# plt.show
-
-
-#%%
-#Case 2
-flogom = np.load("/Users/alisha/Documents/LISA_ET/Sensitivity Curves/LISA_PLS.npy")
-fgw2 = 7.5e-5
-def case2(y):
-    res = y*1e-8
-    return res
-
-def freq2(f):
-    res = f*fgw2
-    return res
-
-omegdat2 = np.array(list(map(case2, ydat)))
-fdat2 = np.array(list(map(freq2, xdat)))
-
-# plt.loglog(fdat, omegdat)
-# plt.show()
-
-# omegme = np.array(list(map(fOmeg, ysmoo)))
-# fme = np.array(list(map(freq, xt)))
-
-plt.figure(figsize=(6, 7))
-plt.loglog(np.exp(flogom[:,0]), np.exp(flogom[:,1]), label = "PLS curve", color = "orangered", linewidth=1.5)
-# plt.loglog(fme, omegme, label="PythonCurve")
-plt.loglog(fdat2, omegdat2, label = "Case 2", color = "black")
-plt.ylabel(r"$\Omega_{GW}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(loc = 9, fontsize = 12)
-plt.grid(True)
-plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_C2.png', bbox_inches='tight')
-plt.show()
 
 #%%
 #Finding double broken powerlaw analytical fit
@@ -430,39 +374,29 @@ plt.loglog(xt, analytical)
 plt.show()
 #%%
 
-#For case 1 using the analytical fit we get
-anaomeg1 = np.array(list(map(case1, analytical)))
-anafreq1 = np.array(list(map(freq1, xt)))
+
+fgw1 = 1e-11
+def case1(y):
+    res = y*1e-6
+    return res
+
+def freq1(f):
+    res = f*fgw1
+    return res
+
+omegdat = np.array(list(map(case1, ydat)))
+fdat = np.array(list(map(freq1, xdat)))
+
+# plt.loglog(fdat, omegdat)
+# plt.show()
+
+# omegme = np.array(list(map(fOmeg, ysmoo)))
+# fme = np.array(list(map(freq, xt)))
+
+# plt.loglog(fme, omegme)
+# plt.loglog(fdat, omegdat)
+# plt.show
 
 
-plt.figure(figsize=(6, 7))
-plt.loglog(freqvals, sigvals, label = "Nominal Curve", color = "indigo", linewidth=1.5)
-plt.loglog(np.exp(fbplo[:,0]), np.exp(fbplo[:,1]), label = "BPLS curve", color = "lime", linewidth=1.5)
-# plt.loglog(fdat, omegdat, label="Data")
-plt.loglog(anafreq1, anaomeg1, label = "Case 1 (analytical)", color = "black")
-plt.ylabel(r"$\Omega_{GW}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(loc = 9, fontsize = 12)
-plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_analytical1.png', bbox_inches='tight')
-plt.show()
 
-#%%
-#For case 2 using the analytical fit we get
-
-
-anaomeg2 = np.array(list(map(case2, analytical)))
-anafreq2 = np.array(list(map(freq2, xt)))
-
-plt.figure(figsize=(6, 7))
-plt.loglog(freqvals, sigvals, label = "Nominal Curve", color = "indigo", linewidth=1.5)
-plt.loglog(np.exp(flogom[:,0]), np.exp(flogom[:,1]), label = "PLS curve", color = "orangered", linewidth=1.5)
-# plt.loglog(fdat2, omegdat2, label="Data")
-plt.loglog(anafreq2, anaomeg2, label = "Case 2 (analytical)", color = "black")
-plt.ylabel(r"$\Omega_{GW}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(loc = 9, fontsize = 12)
-plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_analytical2.png', bbox_inches='tight')
-plt.show()
 
