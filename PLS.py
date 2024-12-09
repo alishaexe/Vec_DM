@@ -111,19 +111,68 @@ anaomeg1 = np.array(list(map(case1, analytical)))
 anafreq1 = np.array(list(map(freq1, xt)))
 
 #%%
-plt.figure(figsize=(6, 7))
+plt.figure(figsize=(5, 7))
 # plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
-plt.loglog(freqs, Omega_GW, label = r"Nominal Nanograv", color = "indigo")
+plt.loglog(freqs, Omega_GW, label = r"Nanograv", color = "indigo")
 # plt.loglog(anafreq1, case1(te), label ="numerical")
-plt.loglog(freqs, Omega_GW*1e-2, label = r"Nominal SKA", color = "blue")
-plt.loglog(anafreq1, anaomeg1, label = "Case 1 (analytical)", color = "black")
-plt.ylabel(r"$\Omega_{GW}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(loc = 9, fontsize = 12)
+plt.loglog(freqs, Omega_GW*1e-2, label = r"SKA", color = "black")
+plt.loglog(anafreq1, anaomeg1, label = "Our Model (Case 1)", color = "blue")
+plt.ylabel(r"$\Omega_{GW}$", fontsize = 14)
+plt.xlabel(r"$f (Hz)$", fontsize = 14)
+plt.legend(loc = 0, fontsize = 12)
 plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano.png', bbox_inches='tight')
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano1.png', bbox_inches='tight')
 plt.show()
+#%%
+otab = np.load("/Users/alisha/Documents/Vec_DM/jaxOmeg.npy")
+xt, te = otab[:,0], otab[:,1]
+fgw2 = 7e-11
 
+def case2(y):
+    res = y*1e-7
+    return res
+
+def freq2(f):
+    res = f*fgw2
+    return res
+
+def OmegAnalytical(f):
+    a1 = 2
+    a2 = 3
+    
+    n1 = 2.6
+    n2 = -0.05
+    n3 = -2
+    
+    f1 = 1
+    f2 = 90
+    
+    t1 = (f/f1)**n1
+    t2 = (1+(f/f1)**a1)**((-n1+n2)/a1)
+    t3 = (1+(f/f2)**a2)**((-n2+n3)/a2)
+    return 1.25e-4*t1*t2*t3
+
+analytical = np.array(list(map(OmegAnalytical, xt)))
+
+# plt.loglog(xt, analytical)
+# plt.show()
+
+#For case 1 using the analytical fit we get
+anaomeg2 = np.array(list(map(case2, analytical)))
+anafreq2 = np.array(list(map(freq2, xt)))
+# #%%
+plt.figure(figsize=(5, 7))
+# plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
+plt.loglog(freqs, Omega_GW, label = r"Nanograv", color = "indigo")
+# plt.loglog(anafreq1, case1(te), label ="numerical")
+plt.loglog(freqs, Omega_GW*1e-2, label = r"SKA", color = "black")
+plt.loglog(anafreq2, anaomeg2, label = "Our Model (Case 2)", color = "green")
+plt.ylabel(r"$\Omega_{GW}$", fontsize = 14)
+plt.xlabel(r"$f (Hz)$", fontsize = 14)
+plt.legend(loc = 0, fontsize = 12)
+plt.grid(True)
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano2.png', bbox_inches='tight')
+plt.show()
 #%%
 
 @jit

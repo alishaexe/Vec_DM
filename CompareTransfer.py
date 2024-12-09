@@ -27,6 +27,26 @@ plt.legend(fontsize=13)
 plt.show()
 
 #%%
+def smooth(x):
+    res = (0.0001*x**2)/(100 + x**2) + (0.00510204*x**2)/(1+0.364431*x**3)
+    return res
+
+
+xvals = np.logspace(np.log10(xsIN), np.log10(xsFIN), 1000)
+
+pscurve = np.array(list(map(smooth, xvals)))
+
+# plt.figure(figsize=(5, 3))
+plt.loglog(xs, ps, label=r'Numerical', color='black')
+plt.loglog(xvals, pscurve, '--',color = 'red', label = "Fitting function")
+plt.xlabel(r'$x_\star$', fontsize=size)
+plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
+plt.title('')
+plt.grid(True) 
+plt.xlim(0.001, 100)
+plt.legend(fontsize = 11)
+# plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
+#%%
 def sin(theta):
     return np.sin(theta)
 def cos(theta):
@@ -39,25 +59,12 @@ def TE(y, xs):
     return sin(xs*y)/(xs*y)
 
 #transfer function late A
-def TLA(y, xs):
-    # sh = sin(1/2)
-    # ch = cos(1/2)
-    
-    # c1a = -sh*cos(xs)+(ch+0.5*sh)*(sin(xs)/xs)
-    # c2a = ch*cos(xs)+(sh-0.5*ch)*(sin(xs)/xs)
-    
-    # res = 1/np.sqrt(y)*(c1a*cos((y**2)/2)+c2a*sin((y**2)/2))
-    
+def TLA(y, xs):    
     res = (2*sin(xs)*cos((1-y**2)/2)+(-2*xs*cos(xs)+sin(xs))*sin((1-y**2)/2))/(2*xs*np.sqrt(y))
     return res
 
 #transfer function late B
 def TLB(y, xs):    
-    # c1b = sin((xs**2)/2)/(xs**1.5)*(1+sin(xs**2)/(2*xs**2))
-    # c2b = cos((xs**2)/2)/(xs**1.5)*(1-sin(xs**2)/(2*xs**2))
-    
-    # res = 1/np.sqrt(y)*(c1b*cos(y**2/2)+c2b*sin(y**2/2))
-    
     res = (-cos((3*xs**2-y**2)/2)+cos((xs**2+y**2)/2)+4*xs**2 * sin((xs**2+y**2)/2))/(4*xs**(7/2)*np.sqrt(y))
     return res
 
@@ -73,24 +80,13 @@ def T(y, xs):
         np.where(condition_yxs, TE(y, xs), TLB(y, xs))  # xs >= 1: check y < xs
     )
 
-# def T(y, xs):
-#     if xs <= 1:
-#         if y <= 1:
-#             return TE(y, xs)
-#         else:
-#             return TLA(y, xs)
-#     else:
-#         if y <= xs:
-#             return TE(y, xs)
-#         else:
-#             return TLB(y, xs)
 
-ymo = np.linspace(0.001,55,500)
 def tcomp(y, xs):
     res =  xs**2*np.abs(T(y, xs))**2
     # res =  np.abs(T(y, xs))
     return res
 
+#This is GT's approximation with the extra parts to make it one whole equation
 def Ttot(y, xs):
     # xs = xsIN * (xsFIN/xsIN) ** ((i-1) / xsnum)
     ch=np.cos(1/2)
@@ -108,23 +104,22 @@ def Ttot(y, xs):
 
 
 # test1 = np.array(list(map(lambda args: tcomp(*args), )))
-test1 = tcomp(np.exp(4), xs)
-test = Ttot(np.exp(4), xs)
-plt.loglog(xs, test1)
-plt.grid(True)
-plt.show
+marco = tcomp(np.exp(4), xs)
+GT = Ttot(np.exp(4), xs)
+# plt.loglog(xs, marco)
+# plt.grid(True)
+# plt.show
 #%%
-#Just T alone
-new_T = np.sqrt(ps/xs**2)
-#%%
-plt.loglog(xs, test, label = "Gianmassimo")
+# plt.loglog(xs, test, label = "Gianmassimo")
+# plt.figure(figsize=(5, 3))
 plt.loglog(xs, ps, label="Numerical", color='indigo')
-plt.loglog(xs, test1, label="Marco")
+plt.loglog(xs, marco, label="Analytical Fit", color = "green")
 plt.xlabel(r'$x_\star$', fontsize=size)
-# plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
+plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
 plt.grid(True) 
-# plt.xlim(0.01, 100)
+plt.xlim(0.001, 500)
 # plt.ylim(1e-6, 10)
-plt.legend(fontsize=13)
+plt.legend(fontsize = 11)
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/numeric_analytic.png', bbox_inches='tight')
 plt.show()

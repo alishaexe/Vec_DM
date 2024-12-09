@@ -13,6 +13,8 @@ xsIN = 0.001
 xsnum = 500
 xs = xsIN * (xsFIN/xsIN) ** ((np.arange(xsnum)) / xsnum)
 
+#%%
+
 # diff equation
 def diffeqs(y, z, xs_i):
     z1, z2 = z #letting z = vp(y)
@@ -20,53 +22,39 @@ def diffeqs(y, z, xs_i):
     dz2_dy = - (2/y) * (1/(1 + (y**2 / xs_i**2))) * z2 - xs_i**2 * (1 + (y**2 / xs_i**2)) * z1
     return [dz1_dy, dz2_dy] #this is vp' and vp''
 
-# the array for Ps
-ps = np.zeros(xsnum)
 #%%
+# This section is commented out because it takes a while to run
+# Around 7 minutes, the data from it is saved to the PS.npy file which is loaded
+# in the next cell
+
+
+# the array for Ps
+# ps = np.zeros(xsnum)
+
+
 # start = time.time()
-# # this solves xs individually and computes ps
-# for i, xsi in enumerate(xs):
-#     # init cons vp(0.001) = 1, vp'(0.001) = 0
-#     v0 = [1, 0]  # conditions on vp and vp'
-#     yspan = (0.001, 55)  # range of y
-#     yeval = np.linspace(0.001, 55, 1000)  # points  for evaluating
-#     # solving
-#     xsi = xsval[i]
-#     sol = solve_ivp(diffeqs, yspan, v0, t_eval=yeval, args=(xsi,), method="Radau")
+# def solve_xs(xs_i):
+#     # Initial conditions: vp(0.001) = 1, vp'(0.001) = 0
+#     z0 = [1.0, 0.0]
+#     y_span = (0.001, 55)
+#     y_eval = np.linspace(0.001, 55, 1000)
+
+#     # Solve the ODE for this particular xs_i
+#     solution = solve_ivp(diffeqs, y_span, z0, t_eval=y_eval, args=(xs_i,), method="Radau")
     
 #     # Extract the solution for vp(y) at y = 55
-#     vp_at_55 = sol.y[0, -1]  # Last point corresponds to y=55
-    
-#     #y axis 
-#     ps[i] = xsval[i]**2 * vp_at_55**2
+#     vp_at_55 = solution.y[0, -1]  # Last point corresponds to y=55
 
+#     # Return Ps[i] = xs[i]^2 * vp(55)^2
+#     return xs_i**2 * vp_at_55**2
+
+# ps = np.array(list(map(solve_xs, xs)))
 # end = time.time()
-# forloop = end-start
-# print("the for loop method took", forloop)
+# arrayt= end - start
+# print("the array method took", arrayt)
 #%%
-#This method takes about 0.02 seconds longer than the forloop. 
-#So if end up needing more iterations will use this instead
+ps = np.load("PS.npy")
 
-start = time.time()
-def solve_xs(xs_i):
-    # Initial conditions: vp(0.001) = 1, vp'(0.001) = 0
-    z0 = [1.0, 0.0]
-    y_span = (0.001, 55)
-    y_eval = np.linspace(0.001, 55, 1000)
-
-    # Solve the ODE for this particular xs_i
-    solution = solve_ivp(diffeqs, y_span, z0, t_eval=y_eval, args=(xs_i,), method="Radau")
-    
-    # Extract the solution for vp(y) at y = 55
-    vp_at_55 = solution.y[0, -1]  # Last point corresponds to y=55
-
-    # Return Ps[i] = xs[i]^2 * vp(55)^2
-    return xs_i**2 * vp_at_55**2
-
-ps = np.array(list(map(solve_xs, xs)))
-end = time.time()
-arrayt= end - start
-print("the array method took", arrayt)
 #%%
 # plt.figure(figsize=(8, 8))
 plt.loglog(xs, ps, label=r'$x^2_\star|T|^2$', color='indigo')
@@ -88,17 +76,16 @@ xvals = np.logspace(np.log10(xsIN), np.log10(xsFIN), 1000)
 
 pscurve = np.array(list(map(smooth, xvals)))
 #%%
-plt.figure(figsize=(5, 3))
-plt.loglog(xs, ps,':', label=r'$x^2_\star|T|^2$', color='indigo')
-# plt.loglog(xs, nonit)
-
-plt.loglog(xvals, pscurve, color = 'black')
+# plt.figure(figsize=(5, 3))
+plt.loglog(xs, ps, label=r'Numerical', color='black')
+plt.loglog(xvals, pscurve, '--',color = 'red', label = "Fitting function")
 plt.xlabel(r'$x_\star$', fontsize=size)
 plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
 plt.grid(True) 
 plt.xlim(0.001, 100)
-# plt.legend(fontsize=13)
+plt.legend(fontsize = 11)
+plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
 plt.show()
 
 
@@ -115,7 +102,7 @@ plt.show()
 # plt.loglog(xs, sfunc, 'r--', label = "smoothed curve over the peaks")
 # plt.scatter(xpeak, ypeak)
 #%%
-
+#This is GT's method
 def Ttot(y, xs):
     # xs = xsIN * (xsFIN/xsIN) ** ((i-1) / xsnum)
     ch=np.cos(1/2)
@@ -142,6 +129,7 @@ plt.grid(True)
 # plt.legend(fontsize=13)
 plt.show()
 #%%
+# This is marcos
 def sin(theta):
     return np.sin(theta)
 def cos(theta):
@@ -218,29 +206,32 @@ def sol(xs):
 
 
 #%%
-xs1=0.01
+xs1=20.3
 numfunc=sol(xs1)
 
-plt.plot(y, sol(xs1), label = "og sol")
-plt.xlabel(r'$y$', fontsize=size)
-plt.ylabel(r'$T$', fontsize=size)
-plt.title('')
-plt.grid(True) 
-# plt.legend(fontsize=13)
-plt.show()
+# plt.plot(y, sol(xs1), label = "og sol")
+# plt.xlabel(r'$y$', fontsize=size)
+# plt.ylabel(r'$T$', fontsize=size)
+# plt.title('')
+# plt.grid(True) 
+# plt.xlim(0,4)
+# # plt.legend(fontsize=13)
+# plt.show()
 
 
-plt.plot(y, sol(xs1), label = "og sol")
-plt.plot(y, Ttot(y,xs1), label = "approximation")
+plt.plot(y, sol(xs1), '--',label = "Numerical", color = "magenta")
+plt.plot(y, Ttot(y,xs1), ':',label = "Approximation", color = "blue")
 plt.xlabel(r'$y$', fontsize=size)
-plt.ylabel(r'$T$', fontsize=size)
-plt.title('xs = {xs}'.format(xs = xs1))
+plt.ylabel(r'$T(y)$', fontsize=size)
+# plt.title('xs = {xs}'.format(xs = xs1))
 plt.grid(True) 
 plt.legend(fontsize=13)
+plt.xlim(0,3)
+plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc1.png', bbox_inches='tight')
 plt.show()
 
 #%%
-xs2 = 0.3
+xs2 = 0.01
 # plt.plot(y, sol(xs2), label = "og sol")
 # plt.xlabel(r'$y$', fontsize=size)
 # plt.ylabel(r'$T$', fontsize=size)
@@ -250,13 +241,17 @@ xs2 = 0.3
 # plt.show()
 
 
-plt.plot(y, sol(xs2), label = "og sol")
-plt.plot(y, Ttot(y,xs2), label = "approximation")
+plt.plot(y, sol(xs2),'--' ,label = "Numerical", color = "black")
+plt.plot(y, Ttot(y,xs2), ':',label = "Approximation", color = "red")
+# plt.plot(y, T(y,xs2), ':',label = "Approximation", color = "blue")
+
 plt.xlabel(r'$y$', fontsize=size)
-plt.ylabel(r'$T$', fontsize=size)
-plt.title('xs = {xs}'.format(xs = xs2))
+plt.ylabel(r'$T(y)$', fontsize=size)
+# plt.title('xs = {xs}'.format(xs = xs2))
 plt.grid(True) 
+plt.xlim(0, 8)
 plt.legend(fontsize=13)
+plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc2.png', bbox_inches='tight')
 plt.show()
 
 #%%
