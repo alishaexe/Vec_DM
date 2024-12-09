@@ -121,36 +121,7 @@ plt.ylabel(r"$\Omega_{GW}$")
 plt.xlabel(r"$f (Hz)$")
 plt.legend(loc = 9, fontsize = 12)
 plt.grid(True)
-plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano.png', bbox_inches='tight')
-plt.show()
-#%%
-
-#Changing this to strain to compare
-#S_h = 3H0**2/2pi**2*Omega_gw / f**3
-#h_c = sqrt(f*s_h)=sqrt(3H0**2/2pi**2*Omega/f**2)
-
-# def strain(f):
-#     res = np.sqrt(3*H0**2/(2*pi**2)*Omega_GW/f**2)
-#     return res
-
-# hc = vmap(strain)(xt)
-# plt.loglog(frequency, hc)
-
-nomhc = np.sqrt(3*H0**2/2*pi**2*Omega_GW / freqs**2)
-plshc = np.sqrt(3*H0**2/2*pi**2*PLS / frequency**2)
-anahc = np.sqrt(3*H0**2/2*pi**2*anaomeg1/ anafreq1**2)
-
-
-plt.figure(figsize=(6, 7))
-# plt.loglog(frequency, plshc, label = "PLS")
-plt.loglog(freqs, nomhc, label = r"$nom$")
-# plt.loglog(freqs, h_c, label ="data")
-plt.loglog(anafreq1, anahc, label = "Case 1 (analytical)", color = "black")
-plt.ylabel(r"$h_{c}$")
-plt.xlabel(r"$f (Hz)$")
-plt.legend(loc = 9, fontsize = 12)
-plt.grid(True)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_analytical1.png', bbox_inches='tight')
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/OverlayOmegGW_skanano.png', bbox_inches='tight')
 plt.show()
 
 #%%
