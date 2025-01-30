@@ -10,7 +10,8 @@ from scipy.interpolate import interp1d
 #This loads the numerical array for transfer function from transfer_plot.py
 size = 16
 ps = np.load("/Users/alisha/Documents/Vec_DM/datafiles/PS.npy")
-
+ps2 = np.load("/Users/alisha/Documents/Vec_DM/datafiles/ps2.npy")
+ps = ps2
 #Now define x_star
 
 xsFIN = 500
@@ -42,10 +43,11 @@ plt.loglog(xvals, pscurve, '--',color = 'red', label = "Fitting function")
 plt.xlabel(r'$x_\star$', fontsize=size)
 plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
-plt.grid(True) 
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.xlim(0.001, 100)
+plt.ylim(1e-8, 1e-2)
 plt.legend(fontsize = 11)
-# plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
+plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
 #%%
 def sin(theta):
     return np.sin(theta)
@@ -113,13 +115,16 @@ GT = Ttot(np.exp(4), xs)
 # plt.loglog(xs, test, label = "Gianmassimo")
 # plt.figure(figsize=(5, 3))
 plt.loglog(xs, ps, label="Numerical", color='indigo')
-plt.loglog(xs, marco, label="Analytical Fit", color = "green")
+plt.loglog(xs, marco, label="Analytical TF", color = "green")
 plt.xlabel(r'$x_\star$', fontsize=size)
 plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
 plt.grid(True) 
+# plt.xlim(0.001, 500)
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.xlim(0.001, 500)
+plt.ylim(1e-8, 1e-2)
 # plt.ylim(1e-6, 10)
 plt.legend(fontsize = 11)
-# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/numeric_analytic.png', bbox_inches='tight')
+plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/numeric_analytic.png', bbox_inches='tight')
 plt.show()

@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 size = 16
 #%%
 # xs range
-xsFIN = 500
+xsFIN = 2000
 xsIN = 0.001
 xsnum = 500
 xs = xsIN * (xsFIN/xsIN) ** ((np.arange(xsnum)) / xsnum)
@@ -29,31 +29,32 @@ def diffeqs(y, z, xs_i):
 
 
 # the array for Ps
-# ps = np.zeros(xsnum)
+ps = np.zeros(xsnum)
 
 
-# start = time.time()
-# def solve_xs(xs_i):
-#     # Initial conditions: vp(0.001) = 1, vp'(0.001) = 0
-#     z0 = [1.0, 0.0]
-#     y_span = (0.001, 55)
-#     y_eval = np.linspace(0.001, 55, 1000)
+start = time.time()
+def solve_xs(xs_i):
+    # Initial conditions: vp(0.001) = 1, vp'(0.001) = 0
+    z0 = [1.0, 0.0]
+    y_span = (0.001, 55)
+    y_eval = np.linspace(0.001, 55, 1000)
 
-#     # Solve the ODE for this particular xs_i
-#     solution = solve_ivp(diffeqs, y_span, z0, t_eval=y_eval, args=(xs_i,), method="Radau")
+    # Solve the ODE for this particular xs_i
+    solution = solve_ivp(diffeqs, y_span, z0, t_eval=y_eval, args=(xs_i,), method="Radau")
     
-#     # Extract the solution for vp(y) at y = 55
-#     vp_at_55 = solution.y[0, -1]  # Last point corresponds to y=55
+    # Extract the solution for vp(y) at y = 55
+    vp_at_55 = solution.y[0, -1]  # Last point corresponds to y=55
 
-#     # Return Ps[i] = xs[i]^2 * vp(55)^2
-#     return xs_i**2 * vp_at_55**2
+    # Return Ps[i] = xs[i]^2 * vp(55)^2
+    return xs_i**2 * vp_at_55**2
 
-# ps = np.array(list(map(solve_xs, xs)))
-# end = time.time()
-# arrayt= end - start
-# print("the array method took", arrayt)
+ps = np.array(list(map(solve_xs, xs)))
+end = time.time()
+arrayt= end - start
+print("the array method took", arrayt)
 #%%
-ps = np.load("PS.npy")
+np.save("datafiles/ps2.npy", ps)
+# ps = np.load("datafiles/PS.npy")
 
 #%%
 # plt.figure(figsize=(8, 8))
@@ -82,10 +83,11 @@ plt.loglog(xvals, pscurve, '--',color = 'red', label = "Fitting function")
 plt.xlabel(r'$x_\star$', fontsize=size)
 plt.ylabel(r'$x^2_\star|T|^2$', fontsize=size)
 plt.title('')
-plt.grid(True) 
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.xlim(0.001, 100)
+plt.ylim(1e-8, 1e-2)
 plt.legend(fontsize = 11)
-plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
+# plt.savefig('Plots/numeric_fitfunc.png', bbox_inches='tight')
 plt.show()
 
 
@@ -220,11 +222,11 @@ numfunc=sol(xs1)
 
 
 plt.plot(y, sol(xs1), '--',label = "Numerical", color = "magenta")
-plt.plot(y, Ttot(y,xs1), ':',label = "Approximation", color = "blue")
+plt.plot(y, Ttot(y,xs1), ':',label = "Analytical TF", color = "blue")
 plt.xlabel(r'$y$', fontsize=size)
 plt.ylabel(r'$T(y)$', fontsize=size)
 # plt.title('xs = {xs}'.format(xs = xs1))
-plt.grid(True) 
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.legend(fontsize=13)
 plt.xlim(0,3)
 plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc1.png', bbox_inches='tight')
@@ -242,13 +244,13 @@ xs2 = 0.01
 
 
 plt.plot(y, sol(xs2),'--' ,label = "Numerical", color = "black")
-plt.plot(y, Ttot(y,xs2), ':',label = "Approximation", color = "red")
+plt.plot(y, Ttot(y,xs2), ':',label = "Analytical TF", color = "red")
 # plt.plot(y, T(y,xs2), ':',label = "Approximation", color = "blue")
 
 plt.xlabel(r'$y$', fontsize=size)
 plt.ylabel(r'$T(y)$', fontsize=size)
 # plt.title('xs = {xs}'.format(xs = xs2))
-plt.grid(True) 
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.xlim(0, 8)
 plt.legend(fontsize=13)
 plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc2.png', bbox_inches='tight')

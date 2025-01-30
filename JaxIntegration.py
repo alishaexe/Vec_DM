@@ -167,9 +167,9 @@ plt.show()
 #%%
 start = time.time()
 
-xsin = 0.2
+xsin = 500
 xsfin = 1000
-xsnum = 200
+xsnum = 1000
 
 xt = xsin * (xsfin/xsin) ** ((jnp.arange(xsnum+1)) / xsnum)
 
@@ -244,11 +244,11 @@ print(mins, "Minutes")
 te = np.array(hope)
 
 jaxo = np.vstack((xt, te)).T
-np.save("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg.npy",jaxo)
+np.save("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg3.npy",jaxo)
 #%%
 
 plt.loglog(xt, hope)
-plt.loglog(x3, y3)
+# plt.loglog(x3, y3)
 # plt.axline((x1,y1),(x2,y2), color = 'r')
 plt.xlabel(r"$x_\star$", fontsize = 16)
 # plt.ylabel(r"$\frac{M^4_{Pl}}{H^4_I}\Omega_{GW}$")
@@ -348,7 +348,7 @@ data = [
 
 # Split data into x and y vectors
 xdat, ydat = np.array(data).T
-
+ydat = ydat/2
 #%%
 #Finding double broken powerlaw analytical fit
 def OmegAnalytical(f):
@@ -359,18 +359,26 @@ def OmegAnalytical(f):
     n2 = -0.05
     n3 = -2
     
-    f1 = 1
-    f2 = 90
+    fgw = 1
+    
+    f1 = 1*fgw
+    f2 = 90*fgw
     
     t1 = (f/f1)**n1
     t2 = (1+(f/f1)**a1)**((-n1+n2)/a1)
     t3 = (1+(f/f2)**a2)**((-n2+n3)/a2)
-    return 1.25e-4*t1*t2*t3
+    return t1*t2*t3*1.25e-4/2
 
 analytical = np.array(list(map(OmegAnalytical, xt)))
 
-plt.loglog(xdat, ydat)
-plt.loglog(xt, analytical)
+plt.loglog(xdat, ydat, label = "Numerical", linewidth = 2)
+plt.loglog(xt, analytical,'--',color = "red", label="Analytical", linewidth=1)
+plt.xlabel(r"$f/f_\star$", fontsize = 12)
+plt.ylabel(r"$\left(\frac{M^4_{Pl}}{\sigma^2_0 H^4_{I}}\right)\Omega_{GW}$", fontsize = 12)
+plt.legend()
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
+plt.ylim(3e-7, 1e-4)
+plt.savefig('Plots/analytical fit.png', bbox_inches='tight')
 plt.show()
 #%%
 
@@ -386,16 +394,17 @@ def freq1(f):
 
 omegdat = np.array(list(map(case1, ydat)))
 fdat = np.array(list(map(freq1, xdat)))
+omegdat1 = np.array(list(map(OmegAnalytical, fdat)))
 
-# plt.loglog(fdat, omegdat)
-# plt.show()
 
-# omegme = np.array(list(map(fOmeg, ysmoo)))
-# fme = np.array(list(map(freq, xt)))
+plt.loglog(fdat, omegdat)
+plt.show()
 
-# plt.loglog(fme, omegme)
-# plt.loglog(fdat, omegdat)
-# plt.show
+
+plt.loglog(fdat, omegdat1*1e-6,color = "blue", label = "ana")
+plt.loglog(fdat, omegdat, label = "data")
+plt.legend()
+plt.show
 
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from labellines import labelLine, labelLines
 #%%
 
 #Loading all the datafiles
@@ -45,7 +46,7 @@ data = [
 
 # Split data into x and y vectors
 xdat, ydat = np.array(data).T
-
+ydat = ydat/2 #Gianmassimo found an extra 1/2 factor we were missing
 PTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/datafiles/sensitivity_curves_NG15yr_fullPTA.txt",delimiter=',', skiprows=1)
 freqs = PTA[:, 0]
 h_c = PTA[:, 1] # characteristic strain
@@ -54,12 +55,33 @@ Omega_GW = PTA[:, 3] #calculated using H0=67.4 km/s/Mpc = 67.4*1e3/1/3e22 s^-1 t
 
 
 #%%
-# Case 1 compared with Nano and Ska
+# arxiv 2002.04615
+SKA = np.loadtxt("/Users/alisha/Documents/Vec_DM/datafiles/strain_SKA.dat", skiprows=10)
+freqska = 10**SKA[:,0]
+omegska = 10**SKA[:,1]
 
-fgw1 = 1e-11
+x1, x2 = freqska[0], freqska[-1]
+y1, y2 = omegska[0], omegska[-1]
+
+IPTA = np.loadtxt("/Users/alisha/Documents/Vec_DM/datafiles/strain_IPTA.dat", skiprows=10)
+freqipta = 10**IPTA[:,0]
+omegipta = 10**IPTA[:,1]
+
+ix1, ix2 = freqipta[0], freqipta[-1]
+iy1, iy2 = omegipta[0], omegipta[-1]
+
+# plt.loglog(freqska, omegska)
+# plt.vlines(x1, y1, '--', 'red')
+# plt.show()
+#%%
+# Case 1 compared with Nano and Ska
+fgw1 = 1.5e-10
+
+def yfact(sig):
+    return sig**2*(1e-6)**4
 
 def case1(y):
-    res = y*1e-6
+    res = y*yfact(1.6e7)
     return res
 
 def freq1(f):
@@ -80,34 +102,64 @@ def OmegAnalytical(f):
     t1 = (f/f1)**n1
     t2 = (1+(f/f1)**a1)**((-n1+n2)/a1)
     t3 = (1+(f/f2)**a2)**((-n2+n3)/a2)
-    return 1.25e-4*t1*t2*t3
+    return 1.25e-4*t1*t2*t3/2
 
 analytical = np.array(list(map(OmegAnalytical, xt)))
 
+h2 = 0.68**2
 
 #For case 1 using the analytical fit we get
 anaomeg1 = np.array(list(map(case1, analytical)))
 anafreq1 = np.array(list(map(freq1, xt)))
-
+#%%
 plt.figure(figsize=(5, 7))
-# plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
-plt.loglog(freqs, Omega_GW, label = r"Nanograv", color = "indigo")
-# plt.loglog(anafreq1, case1(te), label ="numerical")
-plt.loglog(freqs, Omega_GW*1e-2, label = r"SKA", color = "black")
-plt.loglog(anafreq1, anaomeg1, label = "Our Model (Case 1)", color = "blue")
-plt.ylabel(r"$\Omega_{GW}$", fontsize = 14)
-plt.xlabel(r"$f (Hz)$", fontsize = 14)
-plt.legend(loc = 0, fontsize = 12)
-plt.grid(True)
-# plt.savefig('OverlayOmegGW_skanano1.png', bbox_inches='tight')
+
+plt.loglog(freqs, Omega_GW*h2, label = r"NANOGrav", color = "indigo")
+plt.loglog(freqska, omegska, label = r"SKA", color = "black")
+plt.loglog(freqipta, omegipta, label = r"IPTA", color = "firebrick")
+plt.loglog(anafreq1, anaomeg1*h2, label = "Case 1", color = "green")
+
+plt.vlines(x1, y1, y1 + 2, linestyle='--', color = 'black')
+plt.vlines(ix1, iy1, iy1 + 2, linestyle='--', color = 'firebrick')
+
+plt.ylabel(r"$h^2\Omega_{GW}$", fontsize = 14)
+plt.xlabel(r"f(Hz)", fontsize = 14)
+
+# plt.legend(loc = 0, fontsize = 12)
+
+plt.fill_between(freqska, omegska, y2=max(omegska), where=(freqska >= x1) & (freqska <= x2), color='black', alpha=0.2)
+plt.fill_between(freqipta, omegipta, y2=max(omegipta), where=(freqipta >= ix1) & (freqipta <= ix2), color='firebrick', alpha=0.2)
+
+# lines = plt.gca().get_lines()
+# labelLine(lines[-1], 8e-12, align = True)
+# labelLines(lines[:3], xvals=[9e-9, 1e-8, 1e-8],align=True, yoffsets=[6e-9, 5e-12, 2e-10], outline_color="none")
+lines = plt.gca().get_lines()
+labelLine(lines[-1], 8e-10, align = True)
+labelLines(lines[:3], xvals=[9e-9, 1e-8, 1e-8],align=True, yoffsets=[6e-9, 2e-12, 2e-10], outline_color="none")
+
+# plt.ylim(1e-16, 1e-7)
+# plt.xlim(3e-13, 1e-7)
+plt.ylim(3e-17, 1e-7)
+plt.xlim(2e-11, 3e-7)
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
+
+plt.savefig('plots/OverlayOmegGW_skanano1.png', bbox_inches='tight')
 plt.show()
 
 #%%
 #Case 2 compared with SKA and Nano
-fgw2 = 7e-11
+fmin = 0.2
+fmax = 12000
+bins = 30000
+fstep = (fmax-fmin)/bins
+
+frequency = np.arange(fmin, fmax,fstep)
+
+fgw2 = 1.5e-13
 
 def case2(y):
-    res = y*1e-7
+    # put the sigma_0 value into yfact
+    res = y*yfact(1.4e10)
     return res
 
 def freq2(f):
@@ -128,27 +180,141 @@ def OmegAnalytical(f):
     t1 = (f/f1)**n1
     t2 = (1+(f/f1)**a1)**((-n1+n2)/a1)
     t3 = (1+(f/f2)**a2)**((-n2+n3)/a2)
-    return 1.25e-4*t1*t2*t3
+    return 1.25e-4*t1*t2*t3/2
 
 analytical = np.array(list(map(OmegAnalytical, xt)))
 
 # plt.loglog(xt, analytical)
 # plt.show()
+h2 = 0.68**2
 
 #For case 1 using the analytical fit we get
 anaomeg2 = np.array(list(map(case2, analytical)))
 anafreq2 = np.array(list(map(freq2, xt)))
-# #%%
+#%%
+def pixie(f):
+    return 1e-9*(f/f)
+
+fpmin = 1e-15
+fpmax = 1e-11
+bins = 3000
+fpstep = (fpmax-fpmin)/bins
+fpix = np.arange(fpmin, fpmax, fpstep)
+#%%
 plt.figure(figsize=(5, 7))
-# plt.loglog(frequency, PLS, label = "PLS", color = "orangered")
-plt.loglog(freqs, Omega_GW, label = r"Nanograv", color = "indigo")
-# plt.loglog(anafreq1, case1(te), label ="numerical")
-plt.loglog(freqs, Omega_GW*1e-2, label = r"SKA", color = "black")
-plt.loglog(anafreq2, anaomeg2, label = "Our Model (Case 2)", color = "green")
-plt.ylabel(r"$\Omega_{GW}$", fontsize = 14)
-plt.xlabel(r"$f (Hz)$", fontsize = 14)
-plt.legend(loc = 0, fontsize = 12)
-plt.grid(True)
-# plt.savefig('OverlayOmegGW_skanano2.png', bbox_inches='tight')
+
+plt.loglog(freqs, Omega_GW*h2, label = r"NANOGrav", color = "indigo")
+plt.loglog(freqska, omegska, label = r"SKA", color = "black")
+plt.loglog(freqipta, omegipta, label = r"IPTA", color = "firebrick")
+plt.loglog(fpix, pixie(fpix), label="superPIXIE", color = "teal")
+plt.loglog(anafreq2, anaomeg2*h2, label = "Case 2", color = "blue")
+plt.vlines(x1, y1, y1 + 2, linestyle='--', color = 'black')
+plt.vlines(ix1, iy1, iy1 + 2, linestyle='--', color = 'firebrick')
+
+
+
+plt.ylabel(r"$h^2\Omega_{GW}$", fontsize = 14)
+plt.xlabel(r"f(Hz)", fontsize = 14)
+# plt.legend(fontsize = 12)
+
+plt.fill_between(freqska, omegska, y2=max(omegska), where=(freqska >= x1) & (freqska <= x2), color='black', alpha=0.2)
+plt.fill_between(freqipta, omegipta, y2=max(omegipta), where=(freqipta >= ix1) & (freqipta <= ix2), color='firebrick', alpha=0.2)
+plt.fill_between(fpix, pixie(fpix), y2=max(omegska), color="teal", alpha=0.3)
+
+lines = plt.gca().get_lines()
+labelLine(lines[-1], 2e-12, align = True, yoffset=1.5e-9, outline_color="none")
+labelLines(lines[:4], xvals=[9e-9, 1e-8, 1e-8,6e-13],align=True, yoffsets=[6e-9, 5e-12, 2e-10,4e-10], outline_color="none")
+
+
+plt.ylim(1e-16, 1e-7)
+plt.xlim(2e-14, 1e-7)
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
+
+plt.savefig('plots/OverlayOmegGW_skanano2.png', bbox_inches='tight')
+plt.show()
+#%%
+#Case 3 compared with SKA and Nano
+fgw3 = 1e-18
+
+def sigma0():
+    rhos = 6e-10
+    em = 1e-31
+    hm = 1e-6
+    return rhos/(hm**2*(em/1e6)**0.5*5.7e14)
+
+def case3(y):
+    res = y*yfact(1.6e6)
+    return res
+
+def freq3(f):
+    res = f*fgw3
+    return res
+
+def OmegAnalytical(f):
+    a1 = 2
+    a2 = 3
+    
+    n1 = 2.6
+    n2 = -0.05
+    n3 = -2
+    
+    f1 = 1
+    f2 = 90
+    
+    t1 = (f/f1)**n1
+    t2 = (1+(f/f1)**a1)**((-n1+n2)/a1)
+    t3 = (1+(f/f2)**a2)**((-n2+n3)/a2)
+    return 1.25e-4*t1*t2*t3/2
+
+analytical = np.array(list(map(OmegAnalytical, xt)))
+
+# plt.loglog(xt, analytical)
+# plt.show()
+h2 = 0.68**2
+
+#For case 1 using the analytical fit we get
+anaomeg3 = np.array(list(map(case3, analytical)))
+anafreq3 = np.array(list(map(freq3, xt)))
+
+def cmb(f):
+    return 1e-16*(f/f)
+
+fcmin = 1e-18
+fcmax = 1e-16
+bins = 2000
+fcstep = (fcmax-fcmin)/bins
+
+fcmb = np.arange(fcmin, fcmax, fcstep)
+#%%
+plt.figure(figsize=(5, 7))
+
+# plt.loglog(freqs, Omega_GW*h2, label = r"NANOGrav", color = "indigo")
+# plt.loglog(freqska, omegska, label = r"SKA", color = "black")
+# plt.loglog(freqipta, omegipta, label = r"IPTA", color = "firebrick")
+plt.loglog(fcmb, cmb(fcmb), label="CMB", color = "orangered")
+plt.loglog(anafreq3, anaomeg3*h2, label = "Case 3", color = "indigo")
+
+# plt.vlines(x1, y1, y1 + 2, linestyle='--', color = 'black')
+# plt.vlines(ix1, iy1, iy1 + 2, linestyle='--', color = 'firebrick')
+
+
+plt.ylabel(r"$h^2\Omega_{GW}$", fontsize = 14)
+plt.xlabel(r"f(Hz)", fontsize = 14)
+# plt.legend(fontsize = 12)
+
+# plt.fill_between(freqska, omegska, y2=max(omegska), where=(freqska >= x1) & (freqska <= x2), color='black', alpha=0.2)
+# plt.fill_between(freqipta, omegipta, y2=max(omegipta), where=(freqipta >= ix1) & (freqipta <= ix2), color='firebrick', alpha=0.2)
+plt.fill_between(fcmb, cmb(fcmb), y2=1e-10, color="orangered", alpha=0.3)
+
+lines = plt.gca().get_lines()
+# labelLine(lines[-1], 1e-17, align = True, yoffset=1.5e-16, outline_color="none")
+labelLines(lines[:2], xvals=[1e-17, 1e-17],align=True, yoffsets=[1e-17, 6e-18], outline_color="none")
+
+
+plt.ylim(1e-18, 2e-16)
+# plt.xlim(1e-19, 1e-7)
+plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
+
+plt.savefig('plots/OverlayOmegGW_skanano3.png', bbox_inches='tight')
 plt.show()
 #%%
