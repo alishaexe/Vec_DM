@@ -99,15 +99,6 @@ def f(y, u, v, xs):
     res = T(y, u*xs)*T(y,v*xs)-((y**2*derivTdy(y, u*xs)*derivTdy(y,v*xs))/((u**2*xs**2+y**2)*(v**2*xs**2+y**2)))
     return res
 
-# @jit
-# def derivT(y, xs):
-#     return jacobian(lambda y_: T(y_, xs))(y)
-
-# @jit
-# def f(y, u, v, xs):
-#     res = T(y, u*xs)*T(y,v*xs)-((y**2*derivT(y, u*xs)*derivT(y,v*xs))/((u**2*xs**2+y**2)*(v**2*xs**2+y**2)))
-#     return res
-
 @jit
 def IT_cos(y, u, v, xs):
     return y*cos(xs*y)*f(y, u, v, xs)
@@ -116,12 +107,6 @@ def IT_cos(y, u, v, xs):
 def IT_sin(y, u, v, xs):
     return y*sin(xs*y)*f(y, u, v, xs)
 
-# @jit
-# def IT(yend, u, v, xs):#should be 0.01 -> np.inf
-#     yv = jnp.linspace(0.01, yend, 2000)
-#     cos_integral = trapezoid(IT_cos(yv, u, v, xs), yv)
-#     sin_integral = trapezoid(IT_sin(yv, u, v, xs), yv)
-#     return (jnp.real(cos_integral))**2 + (jnp.real(sin_integral))**2
 
 @jit
 def IT(yend, u, v, xs):#should be 0.01 -> np.inf
@@ -167,9 +152,9 @@ plt.show()
 #%%
 start = time.time()
 
-xsin = 500
+xsin = 0.2
 xsfin = 1000
-xsnum = 1000
+xsnum = 500
 
 xt = xsin * (xsfin/xsin) ** ((jnp.arange(xsnum+1)) / xsnum)
 
@@ -189,7 +174,7 @@ snum=15
 st = sinn+ (jnp.arange(snum+1))/snum*(sfin-sinn)
 
 sfactor = 1/snum * (sfin-sinn)
-
+#%%
 @jit
 def kk(i,j): #Tested with testkk and it prints 10201 array elements so works
     res = (tt[i]*(2+tt[i])*(st[j]**2-1))**2/((1-st[j]+tt[i])*(1+st[j]+tt[i]))**2
@@ -244,7 +229,7 @@ print(mins, "Minutes")
 te = np.array(hope)
 
 jaxo = np.vstack((xt, te)).T
-np.save("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg3.npy",jaxo)
+# np.save("/Users/alisha/Documents/Vec_DM/datafiles/jaxOmeg3.npy",jaxo)
 #%%
 
 plt.loglog(xt, hope)
