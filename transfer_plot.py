@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 size = 16
 #%%
 # xs range
-xsFIN = 2000
+xsFIN = 500
 xsIN = 0.001
 xsnum = 500
 xs = xsIN * (xsFIN/xsIN) ** ((np.arange(xsnum)) / xsnum)
@@ -229,7 +229,7 @@ plt.ylabel(r'$T(y)$', fontsize=size)
 plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.legend(fontsize=13)
 plt.xlim(0,3)
-plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc1.png', bbox_inches='tight')
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc1.png', bbox_inches='tight')
 plt.show()
 
 #%%
@@ -253,7 +253,7 @@ plt.ylabel(r'$T(y)$', fontsize=size)
 plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.xlim(0, 8)
 plt.legend(fontsize=13)
-plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc2.png', bbox_inches='tight')
+# plt.savefig('/Users/alisha/Documents/Vec_DM/Plots/Tfunc2.png', bbox_inches='tight')
 plt.show()
 
 #%%
