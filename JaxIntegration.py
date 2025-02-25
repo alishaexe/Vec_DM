@@ -81,6 +81,7 @@ def TLBdy(y, xs):
     t2 = (1-8*xs**2*y**2)*cos((xs**2+y**2)/2)-2*(2*xs**2+y**2)*sin((xs**2+y**2)/2)
     return 1/(8*xs**(7/2)*y**(3/2))*(t1-t2)
 
+#This builds the transfer functions
 @jit
 def derivTdy(y, xs):
     condition_xs = xs < 1
@@ -107,7 +108,7 @@ def IT_cos(y, u, v, xs):
 def IT_sin(y, u, v, xs):
     return y*sin(xs*y)*f(y, u, v, xs)
 
-
+#This is the time integral
 @jit
 def IT(yend, u, v, xs):#should be 0.01 -> np.inf
     yi = jnp.linspace(0.01, yend/2, 7000)
@@ -154,11 +155,12 @@ start = time.time()
 
 xsin = 0.2
 xsfin = 1000
-xsnum = 500
+xsnum = 100
 
 xt = xsin * (xsfin/xsin) ** ((jnp.arange(xsnum+1)) / xsnum)
 
-
+#Swwap from u and v to s and t
+#Using t == u+v-1 and s==u-v
 tin = 0.01
 tfin = 100
 tnum=15
@@ -174,7 +176,8 @@ snum=15
 st = sinn+ (jnp.arange(snum+1))/snum*(sfin-sinn)
 
 sfactor = 1/snum * (sfin-sinn)
-#%%
+
+#The kk term is the t and s part of eq 3.29 in the paper
 @jit
 def kk(i,j): #Tested with testkk and it prints 10201 array elements so works
     res = (tt[i]*(2+tt[i])*(st[j]**2-1))**2/((1-st[j]+tt[i])*(1+st[j]+tt[i]))**2
@@ -210,7 +213,8 @@ def compute_sum(m):
 
 tabres1 = vmap(compute_sum)(m)
 
-
+#Pretty sure I'm a factor of 1/2 missing somewhere because we had to divide the "data"
+#from Gianmassimos file by 2. So if I put in another /2 they match amplitude. Have left it out for now
 @jit
 def fintab(m):
     res = 0.5*1/96/pi**4*tfactor*sfactor*xt[m]**4*tabres1[m]
@@ -287,11 +291,7 @@ plt.figure(figsize=(8, 5))
 plt.loglog(xt, ysmoo, label='Smoothed Curve', linewidth=2)
 plt.legend()
 plt.show()
-#%%
-plt.loglog(xt, ysmoo, label = "Python")
-plt.loglog(xdat, ydat, '--', markersize=5, label='Data')
-plt.legend()
-plt.grid(True)
+
 
 #%%
 data = [
@@ -335,6 +335,11 @@ data = [
 xdat, ydat = np.array(data).T
 ydat = ydat/2
 #%%
+plt.loglog(xt, ysmoo, label = "Python")
+plt.loglog(xdat, ydat, '--', markersize=5, label='Data')
+plt.legend()
+plt.grid(True)
+#%%
 #Finding double broken powerlaw analytical fit
 def OmegAnalytical(f):
     a1 = 2
@@ -357,13 +362,14 @@ def OmegAnalytical(f):
 analytical = np.array(list(map(OmegAnalytical, xt)))
 
 plt.loglog(xdat, ydat, label = "Numerical", linewidth = 2)
+plt.loglog(xt, te)
 plt.loglog(xt, analytical,'--',color = "red", label="Analytical", linewidth=1)
 plt.xlabel(r"$f/f_\star$", fontsize = 12)
 plt.ylabel(r"$\left(\frac{M^4_{Pl}}{\sigma^2_0 H^4_{I}}\right)\Omega_{GW}$", fontsize = 12)
 plt.legend()
 plt.grid(True, which='major', linestyle='--', linewidth=0.4, alpha=0.7) 
 plt.ylim(3e-7, 1e-4)
-plt.savefig('Plots/analytical fit.png', bbox_inches='tight')
+# plt.savefig('Plots/analytical fit.png', bbox_inches='tight')
 plt.show()
 #%%
 
